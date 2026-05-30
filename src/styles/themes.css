@@ -172,6 +172,25 @@
   font-weight: 800;
 }
 
+.toggle-track {
+  width: 3rem;
+  height: 1.75rem;
+}
+
+.toggle-knob {
+  top: 0.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.toggle-knob-off {
+  transform: translateX(0.25rem);
+}
+
+.toggle-knob-on {
+  transform: translateX(1.45rem);
+}
+
 .accent-selected {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 12%, var(--surface));
@@ -256,51 +275,367 @@
 }
 
 .density-compact {
-  font-size: 14px;
+  font-size: 13px;
+  --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.18);
+  --shadow-inset: inset 0 0 0 1px var(--border-soft);
 }
 
 .density-compact .app-card {
-  border-radius: 1.15rem;
+  border-radius: 0.95rem;
+  box-shadow: var(--shadow-raised);
 }
 
 .density-compact .app-pill {
-  padding-block: 0.12rem;
+  padding: 0.08rem 0.38rem;
+  font-size: 0.58rem;
+}
+
+.density-compact button:not(.accent-color-map) {
+  border-radius: 0.8rem;
+}
+
+.density-compact input,
+.density-compact textarea,
+.density-compact select {
+  border-radius: 0.75rem;
+  min-height: 2rem;
+}
+
+.density-compact .min-h-16 {
+  min-height: 2.75rem;
+}
+
+.density-compact .min-h-14 {
+  min-height: 2.6rem;
 }
 
 .density-compact .min-h-12 {
-  min-height: 2.5rem;
+  min-height: 2.25rem;
 }
 
 .density-compact .min-h-11 {
-  min-height: 2.35rem;
+  min-height: 2.1rem;
+}
+
+.density-compact .min-h-10 {
+  min-height: 1.95rem;
+}
+
+.density-compact .min-h-9 {
+  min-height: 1.8rem;
+}
+
+.density-compact .min-h-36 {
+  min-height: 6.75rem;
+}
+
+.density-compact .h-52 {
+  height: 9.5rem;
+}
+
+.density-compact .h-44 {
+  height: 8rem;
+}
+
+.density-compact .h-36,
+.density-compact .w-36 {
+  height: 7rem;
+  width: 7rem;
+}
+
+.density-compact .h-32,
+.density-compact .w-32 {
+  height: 6.4rem;
+  width: 6.4rem;
+}
+
+.density-compact .h-24,
+.density-compact .w-24 {
+  height: 4.5rem;
+  width: 4.5rem;
+}
+
+.density-compact .h-20,
+.density-compact .w-20 {
+  height: 4rem;
+  width: 4rem;
+}
+
+.density-compact .h-16,
+.density-compact .w-16 {
+  height: 3.25rem;
+  width: 3.25rem;
+}
+
+.density-compact .h-14,
+.density-compact .w-14 {
+  height: 2.75rem;
+  width: 2.75rem;
+}
+
+.density-compact .h-12,
+.density-compact .w-12 {
+  height: 2.4rem;
+  width: 2.4rem;
+}
+
+.density-compact .h-11,
+.density-compact .w-11 {
+  height: 2.2rem;
+  width: 2.2rem;
 }
 
 .density-compact .p-6 {
-  padding: 1rem;
+  padding: 0.8rem;
 }
 
 .density-compact .p-5 {
-  padding: 0.95rem;
+  padding: 0.72rem;
 }
 
 .density-compact .p-4 {
-  padding: 0.85rem;
+  padding: 0.62rem;
+}
+
+.density-compact .p-3 {
+  padding: 0.45rem;
+}
+
+.density-compact .p-2 {
+  padding: 0.32rem;
+}
+
+.density-compact .px-5 {
+  padding-left: 0.8rem;
+  padding-right: 0.8rem;
+}
+
+.density-compact .px-4 {
+  padding-left: 0.7rem;
+  padding-right: 0.7rem;
+}
+
+.density-compact .px-3 {
+  padding-left: 0.55rem;
+  padding-right: 0.55rem;
+}
+
+.density-compact .py-3 {
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+
+.density-compact .py-2 {
+  padding-top: 0.32rem;
+  padding-bottom: 0.32rem;
 }
 
 .density-compact .gap-4 {
-  gap: 0.75rem;
-}
-
-.density-compact .gap-3 {
   gap: 0.55rem;
 }
 
+.density-compact .gap-3 {
+  gap: 0.42rem;
+}
+
+.density-compact .gap-2 {
+  gap: 0.28rem;
+}
+
+.density-compact .rounded-\[2rem\],
+.density-compact .rounded-\[1\.75rem\],
+.density-compact .rounded-\[1\.5rem\] {
+  border-radius: 0.95rem;
+}
+
+.density-compact .rounded-2xl {
+  border-radius: 0.75rem;
+}
+
+.density-compact .rounded-xl {
+  border-radius: 0.6rem;
+}
+
 .density-compact .space-y-6 > :not([hidden]) ~ :not([hidden]) {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
 }
 
 .density-compact .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0.5rem;
+}
+
+.density-compact .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0.38rem;
+}
+
+.density-compact .space-y-2 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0.25rem;
+}
+
+.density-compact .mt-6 {
   margin-top: 0.75rem;
+}
+
+.density-compact .mt-5 {
+  margin-top: 0.65rem;
+}
+
+.density-compact .mt-4 {
+  margin-top: 0.52rem;
+}
+
+.density-compact .mt-3 {
+  margin-top: 0.4rem;
+}
+
+.density-compact .mt-2 {
+  margin-top: 0.25rem;
+}
+
+.density-compact .mb-4,
+.density-compact .mb-3 {
+  margin-bottom: 0.45rem;
+}
+
+.density-compact .text-4xl {
+  font-size: 1.85rem;
+}
+
+.density-compact .text-3xl {
+  font-size: 1.55rem;
+}
+
+.density-compact .text-2xl {
+  font-size: 1.28rem;
+}
+
+.density-compact .text-xl {
+  font-size: 1.05rem;
+}
+
+.density-compact .text-lg {
+  font-size: 0.98rem;
+}
+
+.density-compact .text-base {
+  font-size: 0.9rem;
+}
+
+.density-compact .text-sm {
+  font-size: 0.78rem;
+}
+
+.density-compact .leading-6 {
+  line-height: 1.25rem;
+}
+
+.density-compact nav {
+  padding-top: 0.32rem;
+  padding-bottom: calc(var(--safe-bottom) + 0.32rem);
+}
+
+.density-compact .toggle-switch {
+  gap: 0.55rem;
+  padding: 0.34rem 0.48rem;
+  border-radius: 0.75rem;
+}
+
+.density-compact .toggle-track {
+  width: 2.55rem;
+  height: 1.4rem;
+}
+
+.density-compact .toggle-knob {
+  top: 0.18rem;
+  width: 1rem;
+  height: 1rem;
+}
+
+.density-compact .toggle-knob-off {
+  transform: translateX(0.22rem);
+}
+
+.density-compact .toggle-knob-on {
+  transform: translateX(1.28rem);
+}
+
+.density-compact .tile-button {
+  display: flex;
+  min-height: 2.55rem;
+  align-items: center;
+  gap: 0.55rem;
+  border-radius: 0.75rem;
+  padding: 0.45rem 0.6rem;
+  background: var(--surface-inset);
+  box-shadow: none;
+}
+
+.density-compact .option-card {
+  display: flex;
+  min-height: 2.3rem;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  padding: 0.38rem 0.55rem;
+  background: var(--surface-inset);
+  box-shadow: none;
+}
+
+.density-compact .tile-button:hover,
+.density-compact .option-card:hover {
+  transform: none;
+}
+
+.density-compact .tile-button.accent-selected,
+.density-compact .option-card.accent-selected {
+  background: color-mix(in srgb, var(--accent) 11%, var(--surface-inset));
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.density-compact .activity-tile-grid,
+.density-compact .theme-choice-grid,
+.density-compact .mode-tile-grid {
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.density-compact .activity-tile-icon,
+.density-compact .mode-tile-icon {
+  margin-bottom: 0;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 0.62rem;
+}
+
+.density-compact .activity-tile-meta {
+  margin-top: 0;
+  margin-left: auto;
+}
+
+.density-compact .activity-add-tile {
+  flex-direction: row;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.density-compact .theme-preview-swatch {
+  display: none;
+}
+
+.density-compact .tile-description {
+  display: none;
+}
+
+.density-compact .tile-support {
+  margin-top: 0;
+  margin-left: auto;
+}
+
+.density-compact .tile-button > .absolute.right-3.top-3 {
+  top: 50%;
+  right: 0.55rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  transform: translateY(-50%);
 }
 
 .focus-ring {

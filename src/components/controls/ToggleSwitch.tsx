@@ -19,7 +19,7 @@ export function ToggleSwitch({
     <button
       aria-checked={checked}
       className={cn(
-        "focus-ring flex w-full items-center justify-between gap-4 rounded-2xl p-3 text-left transition",
+        "toggle-switch focus-ring flex w-full items-center justify-between gap-4 rounded-2xl p-3 text-left transition",
         "hover:bg-[var(--hover-soft)] disabled:opacity-50"
       )}
       disabled={disabled}
@@ -36,7 +36,7 @@ export function ToggleSwitch({
       <span
         aria-hidden="true"
         className={cn(
-          "relative h-7 w-12 shrink-0 rounded-full border transition",
+          "toggle-track relative shrink-0 rounded-full border transition",
           checked
             ? "border-[var(--accent)] bg-[var(--accent)] shadow-[var(--accent-glow)]"
             : "border-[var(--border-soft)] bg-[var(--toggle-off)]"
@@ -44,8 +44,8 @@ export function ToggleSwitch({
       >
         <span
           className={cn(
-            "absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform",
-            checked ? "translate-x-6" : "translate-x-1"
+            "toggle-knob absolute rounded-full bg-white shadow-sm transition-transform",
+            checked ? "toggle-knob-on" : "toggle-knob-off"
           )}
         />
       </span>

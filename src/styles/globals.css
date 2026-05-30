@@ -46,40 +46,21 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.accent-range {
-  height: 1rem;
-  appearance: none;
-  border: 1px solid var(--border-soft);
-  border-radius: 999px;
-  outline: none;
-}
-
-.accent-range::-webkit-slider-thumb {
-  width: 1.35rem;
-  height: 1.35rem;
-  appearance: none;
-  border: 2px solid #fff;
-  border-radius: 999px;
-  background: var(--accent);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.28),
-    var(--accent-glow);
-}
-
-.accent-range::-moz-range-thumb {
-  width: 1.35rem;
-  height: 1.35rem;
-  border: 2px solid #fff;
-  border-radius: 999px;
-  background: var(--accent);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.28),
-    var(--accent-glow);
-}
-
-.accent-range-vertical {
-  width: 10rem;
-  transform: rotate(-90deg);
+.accent-color-map {
+  background:
+    linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.08) 42%, #000 100%),
+    linear-gradient(
+      90deg,
+      #ef4444 0%,
+      #f97316 12.5%,
+      #eab308 25%,
+      #22c55e 37.5%,
+      #06b6d4 50%,
+      #2563eb 62.5%,
+      #7c3aed 75%,
+      #db2777 87.5%,
+      #ef4444 100%
+    );
 }
 
 .tap-feedback {
