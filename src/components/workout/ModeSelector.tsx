@@ -44,7 +44,7 @@ export function ModeSelector({ activity, value, onChange }: ModeSelectorProps) {
   return (
     <fieldset>
       <legend className="text-app mb-3 block text-sm font-semibold">Mode</legend>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mode-tile-grid grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {options.map((option) => (
           <ModeTile
             key={option.value}
@@ -82,7 +82,7 @@ function ModeTile({
   return (
     <TileButton
       aria-pressed={selected}
-      className={cn("min-h-32 rounded-[1.5rem] p-4", selected && "accent-selected")}
+      className={cn("mode-tile min-h-32 rounded-[1.5rem] p-4", selected && "accent-selected")}
       onClick={() => onChange(mode)}
       selected={selected}
     >
@@ -91,12 +91,14 @@ function ModeTile({
           <Check aria-hidden="true" size={16} />
         </span>
       ) : null}
-      <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[var(--accent-glow)]">
+      <span className="mode-tile-icon mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[var(--accent-glow)]">
         <Icon aria-hidden="true" size={21} />
       </span>
       <span className="text-app block pr-7 font-black">{title}</span>
-      <span className="text-app-soft mt-1 block text-sm leading-5">{description}</span>
-      <span className="app-pill mt-3 inline-flex">Supports {support}</span>
+      <span className="tile-description text-app-soft mt-1 block text-sm leading-5">
+        {description}
+      </span>
+      <span className="tile-support app-pill mt-3 inline-flex">Supports {support}</span>
     </TileButton>
   );
 }

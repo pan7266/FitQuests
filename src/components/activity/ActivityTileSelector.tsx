@@ -36,7 +36,7 @@ export function ActivityTileSelector({
   return (
     <fieldset>
       <legend className="text-app mb-3 block text-sm font-semibold">{t("train.activity")}</legend>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
+      <div className="activity-tile-grid grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
         {sortedActivities.map((activity) => {
           const isSelected = activity.id === value;
           const summary = summaries.find(
@@ -60,7 +60,7 @@ export function ActivityTileSelector({
               <span
                 aria-hidden="true"
                 className={cn(
-                  "mb-4 flex h-11 w-11 items-center justify-center rounded-2xl transition",
+                  "activity-tile-icon mb-4 flex h-11 w-11 items-center justify-center rounded-2xl transition",
                   isSelected
                     ? "bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[var(--accent-glow)]"
                     : "app-inset text-[var(--accent)]"
@@ -74,7 +74,7 @@ export function ActivityTileSelector({
               <span className="text-app-muted mt-1 block text-xs font-bold uppercase tracking-[0.12em]">
                 {translateActivityType(activity.activityType, t)}
               </span>
-              <div className="mt-3 flex flex-wrap gap-1.5">
+              <div className="activity-tile-meta mt-3 flex flex-wrap gap-1.5">
                 {activity.dailyGoal > 0 ? (
                   <span className="app-pill">{formatGoalLine(activity, todayTotal)}</span>
                 ) : (
@@ -85,14 +85,16 @@ export function ActivityTileSelector({
           );
         })}
         <TileButton
-          className="flex min-h-32 flex-col items-center justify-center rounded-[1.5rem] border-dashed p-4 text-center"
+          className="activity-add-tile flex min-h-32 flex-col items-center justify-center rounded-[1.5rem] border-dashed p-4 text-center"
           onClick={onAddActivity}
         >
-          <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[var(--accent-glow)]">
+          <span className="activity-tile-icon mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[var(--accent-glow)]">
             <Plus aria-hidden="true" size={22} />
           </span>
           <span className="text-app font-black">{t("common.addActivity")}</span>
-          <span className="text-app-soft mt-1 text-sm">{t("train.createCustomMovement")}</span>
+          <span className="tile-description text-app-soft mt-1 text-sm">
+            {t("train.createCustomMovement")}
+          </span>
         </TileButton>
       </div>
     </fieldset>

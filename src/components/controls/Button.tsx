@@ -78,7 +78,7 @@ export function TileButton({
   return (
     <button
       className={cn(
-        "focus-ring app-card relative text-left transition hover:-translate-y-0.5 disabled:opacity-45",
+        "tile-button focus-ring app-card relative text-left transition hover:-translate-y-0.5 disabled:opacity-45",
         selected && "accent-selected",
         className
       )}
@@ -100,7 +100,7 @@ export function OptionCard({
   return (
     <button
       className={cn(
-        "focus-ring rounded-2xl p-3 text-left transition hover:bg-[var(--hover-soft)] disabled:opacity-45",
+        "option-card focus-ring rounded-2xl p-3 text-left transition hover:bg-[var(--hover-soft)] disabled:opacity-45",
         selected ? "accent-selected" : "app-inset",
         className
       )}

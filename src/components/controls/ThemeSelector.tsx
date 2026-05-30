@@ -24,7 +24,7 @@ export function ThemeSelector({ uiStyle, colorMode, onChange }: ThemeSelectorPro
     <div className="space-y-5">
       <fieldset>
         <legend className="text-app mb-3 text-lg font-black">{t("theme.style")}</legend>
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="theme-choice-grid grid gap-3 md:grid-cols-3">
           {THEME_STYLE_OPTIONS.map((choice) => {
             const selected = choice.uiStyle === uiStyle;
             return (
@@ -42,7 +42,7 @@ export function ThemeSelector({ uiStyle, colorMode, onChange }: ThemeSelectorPro
                 ) : null}
                 <ThemePreviewSwatch uiStyle={choice.uiStyle} />
                 <span className="text-app block pr-8 font-black">{t(choice.titleKey)}</span>
-                <span className="text-app-soft mt-1 block text-sm leading-5">
+                <span className="tile-description text-app-soft mt-1 block text-sm leading-5">
                   {t(choice.descriptionKey)}
                 </span>
               </TileButton>
@@ -59,7 +59,7 @@ function ThemePreviewSwatch({ uiStyle }: { uiStyle: UiStyle }) {
     <span
       aria-hidden="true"
       className={cn(
-        "mb-4 grid h-14 w-24 grid-cols-[1fr_2fr] gap-2 rounded-2xl border p-2",
+        "theme-preview-swatch mb-4 grid h-14 w-24 grid-cols-[1fr_2fr] gap-2 rounded-2xl border p-2",
         uiStyle === "material"
           ? "border-slate-300 bg-white"
           : "border-[var(--border-soft)] bg-[var(--surface-inset)]",
