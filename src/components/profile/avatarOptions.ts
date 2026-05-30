@@ -1,46 +1,25 @@
-import { Flame, Gem, Shield, Sparkles, Star, Zap } from "lucide-react";
+import { Flame, Gem, Moon, Shield, Sparkles, Swords, Zap } from "lucide-react";
+import { CHARACTER_OPTIONS, getCharacterOption } from "../../data/characters";
 
-export const AVATAR_OPTIONS = [
-  {
-    id: "default",
-    label: "Spark",
-    icon: Sparkles,
-    gradient:
-      "linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 54%, #ffffff))"
-  },
-  {
-    id: "flame",
-    label: "Streak",
-    icon: Flame,
-    gradient: "linear-gradient(135deg, #F43F5E, #F59E0B)"
-  },
-  {
-    id: "bolt",
-    label: "Power",
-    icon: Zap,
-    gradient: "linear-gradient(135deg, var(--accent), #22C55E)"
-  },
-  {
-    id: "shield",
-    label: "Steady",
-    icon: Shield,
-    gradient: "linear-gradient(135deg, #0F172A, var(--accent))"
-  },
-  {
-    id: "star",
-    label: "Record",
-    icon: Star,
-    gradient: "linear-gradient(135deg, #7C3AED, var(--accent))"
-  },
-  {
-    id: "gem",
-    label: "Focus",
-    icon: Gem,
-    gradient: "linear-gradient(135deg, #0891B2, var(--accent))"
-  }
-] as const;
+const fallbackIcons = {
+  blade: Swords,
+  bolt: Zap,
+  bow: Sparkles,
+  dagger: Swords,
+  flame: Flame,
+  helm: Shield,
+  moon: Moon,
+  rune: Gem,
+  shield: Shield,
+  spark: Sparkles
+};
+
+export const AVATAR_OPTIONS = CHARACTER_OPTIONS.map((character) => ({
+  ...character,
+  label: character.nameKey,
+  icon: fallbackIcons[character.fallbackIcon as keyof typeof fallbackIcons] ?? Sparkles
+}));
 
 export type AvatarId = (typeof AVATAR_OPTIONS)[number]["id"];
 
-export const getAvatarOption = (avatarId: string) =>
-  AVATAR_OPTIONS.find((avatar) => avatar.id === avatarId) ?? AVATAR_OPTIONS[0];
+export { getCharacterOption as getAvatarOption };

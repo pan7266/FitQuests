@@ -1,17 +1,14 @@
-import {
-  Activity,
-  Crown,
-  Dumbbell,
-  Footprints,
-  Heart,
-  RotateCcw,
-  Shield,
-  Skull,
-  Timer,
-  X
-} from "lucide-react";
+import { Activity, Dumbbell, Footprints, Heart, RotateCcw, Timer, X } from "lucide-react";
 import type { CSSProperties } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  BattleBackdrop,
+  BossIcon,
+  CharacterPortrait,
+  MonsterIcon
+} from "../../components/visuals/FantasyVisuals";
+import type { EnemyVisual } from "../../data/assetMap";
+import { mapBossState, mapMobState, resolveEnemyVisual } from "../../data/assetMap";
 import { listActivities } from "../../db/repositories/activitiesRepo";
 import {
   fleeAdventureBattle,
@@ -159,6 +156,19 @@ export function BattleView({ enemyId }: { enemyId: string }) {
       : enemyRecord.enemy.enemyType === "elite"
         ? "Elite"
         : "Enemy";
+  const enemyVisual = resolveEnemyVisual(
+    enemy,
+    translateHitLabel(hit, settings),
+    enemyRecord.kind === "boss"
+      ? "boss"
+      : enemyRecord.enemy.enemyType === "elite"
+        ? "elite"
+        : "normal"
+  );
+  const enemyVisualState =
+    enemyRecord.kind === "boss"
+      ? mapBossState(enemyRecord.enemy.status, true)
+      : mapMobState(enemyRecord.enemy.status, true);
   const enemyHpPercent =
     enemy.maxHP <= 0 ? 0 : Math.min(100, (enemy.currentHP / enemy.maxHP) * 100);
   const heroHpPercent =
@@ -356,7 +366,7 @@ export function BattleView({ enemyId }: { enemyId: string }) {
                 {translateEnemyTitle(enemy, settings)}
               </h2>
             </div>
-            <EnemyBadge type={enemyTypeLabel} />
+            <EnemyBadge type={enemyTypeLabel} visual={enemyVisual} />
           </div>
           <HealthBar
             label={ta("battle.enemyHp")}
@@ -367,26 +377,31 @@ export function BattleView({ enemyId }: { enemyId: string }) {
           />
         </div>
 
-        <div className="relative min-h-[19rem] overflow-hidden bg-[radial-gradient(circle_at_top,var(--accent-glow),transparent_42%),linear-gradient(180deg,var(--surface-raised),var(--surface-inset))] p-5">
+        <div className="battle-arena relative min-h-[19rem] overflow-hidden p-5">
+          <BattleBackdrop realmId={enemyVisual.realmId} />
           {floatText ? (
-            <div className="pointer-events-none absolute left-1/2 top-20 -translate-x-1/2 animate-bounce rounded-full bg-[var(--danger)] px-4 py-2 text-2xl font-black text-white shadow-lg">
+            <div className="battle-damage-float pointer-events-none absolute left-1/2 top-20 -translate-x-1/2 rounded-full bg-[var(--danger)] px-4 py-2 text-2xl font-black text-white shadow-lg">
               {floatText}
             </div>
           ) : null}
           {heroFloatText ? (
-            <div className="pointer-events-none absolute left-1/4 top-24 -translate-x-1/2 animate-bounce rounded-full bg-[var(--danger)] px-4 py-2 text-xl font-black text-white shadow-lg">
+            <div className="battle-damage-float pointer-events-none absolute left-1/4 top-24 -translate-x-1/2 rounded-full bg-[var(--danger)] px-4 py-2 text-xl font-black text-white shadow-lg">
               {heroFloatText}
             </div>
           ) : null}
-          <div className="grid min-h-[15rem] grid-cols-2 items-end gap-4">
+          <div className="relative z-10 grid min-h-[15rem] grid-cols-2 items-end gap-4">
             <div className="text-center">
               <div
                 className={cn(
-                  "mx-auto flex h-24 w-24 animate-pulse items-center justify-center rounded-full bg-[var(--surface)] text-[var(--accent)] shadow-[var(--shadow-raised)] md:h-32 md:w-32",
-                  enemyTurnAnimation && "battle-avatar-hit"
+                  "battle-combatant mx-auto flex items-center justify-center",
+                  enemyTurnAnimation && "battle-hero-hit"
                 )}
               >
-                <Shield aria-hidden="true" size={48} />
+                <CharacterPortrait
+                  animated
+                  characterId={settings?.avatarId ?? "default"}
+                  size="xl"
+                />
               </div>
               <p className="text-app mt-3 font-black">
                 {settings?.displayName?.trim() || t("common.player")}
@@ -398,14 +413,14 @@ export function BattleView({ enemyId }: { enemyId: string }) {
             <div className="text-center">
               <div
                 className={cn(
-                  "mx-auto flex h-28 w-28 animate-pulse items-center justify-center rounded-full bg-[var(--surface)] text-[var(--danger)] shadow-[var(--shadow-raised)] md:h-36 md:w-36",
-                  hitAnimation && "battle-avatar-hit"
+                  "battle-combatant mx-auto flex items-center justify-center",
+                  hitAnimation && "battle-enemy-hit"
                 )}
               >
                 {enemyRecord.kind === "boss" ? (
-                  <Crown aria-hidden="true" size={58} />
+                  <BossIcon animated visual={enemyVisual} state={enemyVisualState} size="xl" />
                 ) : (
-                  <Skull aria-hidden="true" size={58} />
+                  <MonsterIcon animated visual={enemyVisual} state={enemyVisualState} size="xl" />
                 )}
               </div>
               <p className="text-app mt-3 font-black">{translateEnemyTitle(enemy, settings)}</p>
@@ -703,7 +718,7 @@ function localizeBattleLog(
   return item;
 }
 
-function EnemyBadge({ type }: { type: string }) {
+function EnemyBadge({ type, visual }: { type: string; visual: EnemyVisual }) {
   const isBoss = type === "Boss";
   return (
     <span
@@ -712,7 +727,11 @@ function EnemyBadge({ type }: { type: string }) {
         isBoss ? "bg-[var(--danger)] text-white" : "bg-[var(--surface-inset)] text-[var(--accent)]"
       )}
     >
-      {isBoss ? <Crown aria-hidden="true" size={24} /> : <Skull aria-hidden="true" size={24} />}
+      {isBoss ? (
+        <BossIcon visual={visual} state="active" size="sm" />
+      ) : (
+        <MonsterIcon visual={visual} state="active" size="sm" />
+      )}
     </span>
   );
 }
@@ -770,7 +789,7 @@ function HealthBar({
 }
 
 function BattleModal({ modal, onClose }: { modal: BattleModalState; onClose: () => void }) {
-  const Icon = modal.tone === "defeat" ? Heart : modal.tone === "flee" ? RotateCcw : Crown;
+  const Icon = modal.tone === "defeat" ? Heart : modal.tone === "flee" ? RotateCcw : Dumbbell;
   return (
     <div
       aria-labelledby="battle-modal-title"

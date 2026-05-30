@@ -20,6 +20,7 @@ import { cn } from "../../utils/classNames";
 import { getAdventureLanguage, translate, translateAdventure } from "../../utils/i18n";
 import { getCurrentLevelProgress } from "../../utils/levels";
 import { calculateStreaks } from "../../utils/streaks";
+import { CharacterPortrait } from "../visuals/FantasyVisuals";
 import { getAvatarOption } from "./avatarOptions";
 
 type ProfileHeroVariant = "full" | "compact";
@@ -92,7 +93,6 @@ export function ProfileHeroSection({
   const ta = (key: string) => translateAdventure(settings, key);
   const displayName = settings?.displayName?.trim() || t("common.player");
   const avatar = getAvatarOption(settings?.avatarId ?? "default");
-  const AvatarIcon = avatar.icon;
   const levelProgress = getCurrentLevelProgress(state.progress.totalXP);
   const streak = calculateStreaks(state.workouts.map((workout) => workout.localDate));
   const currentRegion = state.regions.find((region) => region.id === state.hero?.selectedRealmId);
@@ -133,11 +133,10 @@ export function ProfileHeroSection({
         <div className="flex items-center gap-4">
           <div
             aria-label={`${displayName} ${t("profile.avatar")}`}
-            className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full text-white shadow-[var(--accent-glow)] lg:h-24 lg:w-24"
+            className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full shadow-[var(--accent-glow)] lg:h-24 lg:w-24"
             role="img"
-            style={{ background: avatar.gradient }}
           >
-            <AvatarIcon aria-hidden="true" size={variant === "compact" ? 34 : 40} />
+            <CharacterPortrait characterId={avatar.id} size={variant === "compact" ? "md" : "lg"} />
           </div>
           <div className="min-w-0">
             <p className="text-app-muted text-sm font-bold uppercase tracking-[0.16em]">

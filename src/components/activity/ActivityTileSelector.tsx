@@ -47,7 +47,10 @@ export function ActivityTileSelector({
           return (
             <TileButton
               aria-pressed={isSelected}
-              className={cn("min-h-32 rounded-[1.5rem] p-4", isSelected && "accent-selected")}
+              className={cn(
+                "train-activity-tile min-h-32 rounded-[1.5rem] p-4",
+                isSelected && "accent-selected"
+              )}
               key={activity.id}
               onClick={() => onChange(activity.id)}
               selected={isSelected}
@@ -85,7 +88,7 @@ export function ActivityTileSelector({
           );
         })}
         <TileButton
-          className="activity-add-tile flex min-h-32 flex-col items-center justify-center rounded-[1.5rem] border-dashed p-4 text-center"
+          className="activity-add-tile train-activity-tile flex min-h-32 flex-col items-center justify-center rounded-[1.5rem] border-dashed p-4 text-center"
           onClick={onAddActivity}
         >
           <span className="activity-tile-icon mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[var(--accent-glow)]">
