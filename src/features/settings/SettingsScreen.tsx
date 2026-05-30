@@ -6,6 +6,7 @@ import { ToggleSwitch } from "../../components/controls/ToggleSwitch";
 import { NeomorphicButton } from "../../components/neumorphic/NeomorphicButton";
 import { AVATAR_OPTIONS } from "../../components/profile/avatarOptions";
 import { ProfileHeroSection } from "../../components/profile/ProfileHeroSection";
+import { CharacterPortrait } from "../../components/visuals/FantasyVisuals";
 import {
   archiveCustomActivity,
   createCustomActivity,
@@ -273,27 +274,20 @@ export function SettingsScreen() {
               </legend>
               <div className="grid grid-cols-3 gap-2">
                 {AVATAR_OPTIONS.map((avatar) => {
-                  const Icon = avatar.icon;
                   const selected = (settings?.avatarId ?? "default") === avatar.id;
+                  const characterName = t(avatar.nameKey);
                   return (
                     <button
-                      aria-label={`Use ${avatar.label} avatar`}
+                      aria-label={`${t("profile.useAvatar")} ${characterName}`}
                       aria-pressed={selected}
-                      className={`focus-ring flex aspect-square items-center justify-center rounded-2xl transition ${
+                      className={`focus-ring flex aspect-square items-center justify-center rounded-2xl p-1 transition ${
                         selected ? "accent-selected" : "app-inset"
                       }`}
                       key={avatar.id}
                       onClick={() => void updateSettings({ avatarId: avatar.id })}
-                      style={{ background: selected ? avatar.gradient : undefined }}
                       type="button"
                     >
-                      <Icon
-                        aria-hidden="true"
-                        className={
-                          selected ? "text-[var(--accent-contrast)]" : "text-[var(--accent)]"
-                        }
-                        size={22}
-                      />
+                      <CharacterPortrait characterId={avatar.id} size="sm" />
                     </button>
                   );
                 })}

@@ -1,18 +1,17 @@
-import {
-  Award,
-  Check,
-  Crown,
-  Lock,
-  Map as MapIcon,
-  Package,
-  Search,
-  Skull,
-  Swords
-} from "lucide-react";
+import { Award, Check, Lock, Search, Swords } from "lucide-react";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ProfileHeroSection } from "../../components/profile/ProfileHeroSection";
 import { RecordCard } from "../../components/records/RecordCard";
+import { BossIcon, MonsterIcon, RealmBanner } from "../../components/visuals/FantasyVisuals";
+import type { EnemyVisual, VisualState } from "../../data/assetMap";
+import {
+  mapBossState,
+  mapMobState,
+  resolveChestVisual,
+  resolveEnemyVisual,
+  resolveRealmState
+} from "../../data/assetMap";
 import { listActivities } from "../../db/repositories/activitiesRepo";
 import {
   listAdventureState,
@@ -471,13 +470,21 @@ function RealmCard({
   const defeatedBosses = realmBosses.filter((item) => item.status === "defeated").length;
   const realmChests = chests.filter((item) => item.realmId === region.id);
   const openedChests = realmChests.filter((item) => item.status === "opened").length;
+  const realmState = resolveRealmState(region);
   return (
     <article
       className={cn(
-        "app-card flex h-full flex-col rounded-[1.75rem] p-4",
+        "app-card flex h-full flex-col overflow-hidden rounded-[1.75rem] p-4",
         region.status === "completed" && "border-[var(--success)]"
       )}
     >
+      <RealmBanner
+        className="mb-4"
+        compact
+        realmId={region.id}
+        state={realmState}
+        title={translateRealmTitle(region.title, ta)}
+      />
       <div className="flex items-start justify-between gap-3">
         <div className="min-h-[5.25rem]">
           <p className="text-app-muted text-xs font-black uppercase tracking-[0.14em]">
@@ -487,11 +494,7 @@ function RealmCard({
             {translateRealmTitle(region.title, ta)}
           </h2>
         </div>
-        {region.isUnlocked ? (
-          <MapIcon aria-hidden="true" className="text-[var(--accent)]" size={24} />
-        ) : (
-          <Lock aria-hidden="true" className="text-app-muted" size={22} />
-        )}
+        <StatusIcon state={realmState} />
       </div>
       <p className="text-app-soft mt-3 min-h-[4.5rem] text-sm leading-6">{region.description}</p>
       <div className="mt-4 grid grid-cols-2 gap-2">
@@ -578,12 +581,24 @@ function RealmDetailHeader({
   const defeatedBosses = realmBosses.filter((item) => item.status === "defeated").length;
   const realmMobs = mobs.filter((mob) => mob.realmId === region.id);
   return (
-    <section className="app-card rounded-[1.75rem] p-5">
-      <p className="text-app-muted text-xs font-black uppercase tracking-[0.16em]">
-        {t("adventure.realmDetail")}
-      </p>
-      <h2 className="text-app mt-1 text-3xl font-black">{translateRealmTitle(region.title, ta)}</h2>
-      <p className="text-app-soft mt-2 text-sm leading-6">{region.description}</p>
+    <section className="app-card overflow-hidden rounded-[1.75rem] p-5">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-center">
+        <div>
+          <p className="text-app-muted text-xs font-black uppercase tracking-[0.16em]">
+            {t("adventure.realmDetail")}
+          </p>
+          <h2 className="text-app mt-1 text-3xl font-black">
+            {translateRealmTitle(region.title, ta)}
+          </h2>
+          <p className="text-app-soft mt-2 text-sm leading-6">{region.description}</p>
+        </div>
+        <RealmBanner
+          compact
+          realmId={region.id}
+          state={resolveRealmState(region)}
+          title={translateRealmTitle(region.title, ta)}
+        />
+      </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <FlatMetric label={t("common.goal")} value={t("adventure.realmGoal")} />
         <FlatMetric label={t("common.progress")} value={`${region.progress}%`} />
@@ -685,7 +700,8 @@ function RealmNodeCard({
   settings?: Settings | undefined;
   t: (key: string) => string;
 }) {
-  const Icon = getNodeIcon(node);
+  const visual = getNodeVisual(node);
+  const visualState = getNodeVisualState(node);
   return (
     <button
       className={cn(
@@ -704,7 +720,11 @@ function RealmNodeCard({
             {translateNodeTitle(node, settings)}
           </h3>
         </div>
-        <Icon aria-hidden="true" className={getTypeColor(node.type)} size={24} />
+        {node.type === "boss" ? (
+          <BossIcon visual={visual} state={visualState} size="md" />
+        ) : (
+          <MonsterIcon visual={visual} state={visualState} size="md" />
+        )}
       </div>
       <p className="text-app-soft mt-2 text-sm leading-6">{node.requirementLabel}</p>
       <div className="mt-3 grid grid-cols-2 gap-2">
@@ -740,7 +760,6 @@ function NodeDetailPanel({
   if (!node) {
     return null;
   }
-  const Icon = getNodeIcon(node);
   const canFight =
     (node.type === "enemy" || node.type === "elite" || node.type === "boss") &&
     (node.status === "available" || node.status === "active");
@@ -754,17 +773,16 @@ function NodeDetailPanel({
           skills
         })
       : undefined;
+  const visual = getNodeVisual(node);
+  const visualState = getNodeVisualState(node);
   return (
     <section className="app-card rounded-[1.75rem] p-5">
       <div className="flex items-start gap-4">
-        <span
-          className={cn(
-            "flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--surface-inset)]",
-            getTypeColor(node.type)
-          )}
-        >
-          <Icon aria-hidden="true" size={30} />
-        </span>
+        {node.type === "boss" ? (
+          <BossIcon visual={visual} state={visualState} size="lg" />
+        ) : (
+          <MonsterIcon visual={visual} state={visualState} size="lg" />
+        )}
         <div>
           <p className={cn("text-xs font-black uppercase tracking-[0.14em]", getStatusColor(node))}>
             {translateNodeType(node.type, t)} · {translateStatus(node.status, t)}
@@ -885,7 +903,6 @@ function PreFightModal({
   settings?: Settings | undefined;
   t: (key: string) => string;
 }) {
-  const Icon = getNodeIcon(node);
   const expectedDamage = node.hitRequirement
     ? calculateExpectedDamage({
         hit: node.hitRequirement,
@@ -894,6 +911,8 @@ function PreFightModal({
         skills
       })
     : undefined;
+  const visual = getNodeVisual(node);
+  const visualState = getNodeVisualState(node);
 
   return (
     <div
@@ -903,14 +922,11 @@ function PreFightModal({
     >
       <div className="app-card max-w-lg rounded-[2rem] p-6">
         <div className="flex items-start gap-4">
-          <span
-            className={cn(
-              "flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[var(--surface-inset)]",
-              getTypeColor(node.type)
-            )}
-          >
-            <Icon aria-hidden="true" size={34} />
-          </span>
+          {node.type === "boss" ? (
+            <BossIcon visual={visual} state={visualState} size="lg" />
+          ) : (
+            <MonsterIcon visual={visual} state={visualState} size="lg" />
+          )}
           <div>
             <p
               className={cn("text-xs font-black uppercase tracking-[0.14em]", getStatusColor(node))}
@@ -1066,6 +1082,22 @@ function HealthLine({
       </div>
     </div>
   );
+}
+
+function StatusIcon({ state }: { state: VisualState }) {
+  const className =
+    state === "locked"
+      ? "text-app-muted"
+      : state === "defeated" || state === "opened" || state === "completed"
+        ? "text-[var(--success)]"
+        : "text-[var(--accent)]";
+  const Icon =
+    state === "locked"
+      ? Lock
+      : state === "defeated" || state === "opened" || state === "completed"
+        ? Check
+        : Swords;
+  return <Icon aria-hidden="true" className={className} size={22} />;
 }
 
 function FlatMetric({ label, value }: { label: string; value: string }) {
@@ -1265,23 +1297,51 @@ function formatRequirement(requirement: AdventureMobRequirement, activity: Activ
   return `${requirement.requiredValue} ${activity?.name ?? "reps"}`;
 }
 
-function getNodeIcon(node: RealmNode) {
-  if (node.type === "chest") {
-    return Package;
+function getNodeVisual(node: RealmNode): EnemyVisual {
+  if (node.chest) {
+    return resolveChestVisual(node.chest);
   }
-  if (node.type === "boss") {
-    return Crown;
+  if (node.boss) {
+    return resolveEnemyVisual(node.boss, node.requirementLabel, "boss");
   }
-  if (node.type === "elite") {
-    return Skull;
+  if (node.mob) {
+    return resolveEnemyVisual(
+      node.mob,
+      node.requirementLabel,
+      node.type === "elite" ? "elite" : "normal"
+    );
   }
-  if (node.status === "defeated") {
-    return Check;
+  return {
+    id: node.id,
+    realmId: "region_gate",
+    name: node.title,
+    type: "normal",
+    level: node.level,
+    hp: node.hpCurrent,
+    attack: 0,
+    weakness: "strength",
+    requiredExercise: node.requirementLabel,
+    rewardXp: node.rewardXP,
+    iconKey: "gate-slime",
+    portraitKey: "gate-slime-portrait",
+    battleImageKey: "gate-slime-battle",
+    silhouetteType: "beast",
+    visualTheme: "training-gate",
+    themeColor: "var(--accent)"
+  };
+}
+
+function getNodeVisualState(node: RealmNode): VisualState {
+  if (node.mob) {
+    return mapMobState(node.mob.status, node.status === "active");
   }
-  if (node.status === "locked") {
-    return Lock;
+  if (node.boss) {
+    return mapBossState(node.boss.status, node.status === "active");
   }
-  return Swords;
+  if (node.chest) {
+    return node.chest.status;
+  }
+  return node.status;
 }
 
 function getTypeColor(type: RealmNodeType) {

@@ -592,13 +592,11 @@
   box-shadow: 0 0 0 1px var(--accent);
 }
 
-.density-compact .activity-tile-grid,
 .density-compact .theme-choice-grid,
 .density-compact .mode-tile-grid {
   grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
 }
 
-.density-compact .activity-tile-icon,
 .density-compact .mode-tile-icon {
   margin-bottom: 0;
   width: 1.9rem;
@@ -606,15 +604,48 @@
   border-radius: 0.62rem;
 }
 
+.density-compact .activity-tile-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.density-compact .train-activity-tile {
+  display: block;
+  min-height: 6.4rem;
+  border-radius: 1rem;
+  padding: 0.62rem;
+  background: var(--surface);
+  box-shadow: var(--shadow-raised);
+}
+
+.density-compact .train-activity-tile:hover {
+  transform: translateY(-1px);
+}
+
+.density-compact .train-activity-tile.accent-selected {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  box-shadow:
+    0 0 0 1px var(--accent),
+    0 0 18px var(--accent-glow);
+}
+
+.density-compact .activity-tile-icon {
+  margin-bottom: 0.42rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.72rem;
+}
+
 .density-compact .activity-tile-meta {
-  margin-top: 0;
-  margin-left: auto;
+  margin-top: 0.45rem;
+  margin-left: 0;
 }
 
 .density-compact .activity-add-tile {
-  flex-direction: row;
-  justify-content: flex-start;
-  text-align: left;
+  display: flex;
+  min-height: 6.4rem;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
 }
 
 .density-compact .theme-preview-swatch {
@@ -636,6 +667,30 @@
   width: 1.25rem;
   height: 1.25rem;
   transform: translateY(-50%);
+}
+
+.density-compact .train-activity-tile > .absolute.right-3.top-3 {
+  top: 0.45rem;
+  right: 0.45rem;
+  transform: none;
+}
+
+@media (min-width: 640px) {
+  .density-compact .activity-tile-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .density-compact .activity-tile-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1536px) {
+  .density-compact .activity-tile-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
 }
 
 .focus-ring {
