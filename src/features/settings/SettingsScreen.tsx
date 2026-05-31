@@ -14,6 +14,7 @@ import {
   updateActivity
 } from "../../db/repositories/activitiesRepo";
 import { listAdventureState } from "../../db/repositories/adventureRepo";
+import { createProfileHistoryEntries } from "../../db/repositories/profileHistoryRepo";
 import {
   createProfile,
   deleteProfile,
@@ -30,6 +31,7 @@ import type {
   DailyActivitySummary,
   HeroProgress,
   LocalProfile,
+  Settings,
   UserProgress,
   Workout
 } from "../../db/schema";
@@ -52,6 +54,13 @@ interface HeroStats {
   adventureRegions: AdventureRegion[];
 }
 
+interface ProfileDraft {
+  displayName: string;
+  weightKg: string;
+  heightCm: string;
+  goalWeightKg: string;
+}
+
 export function SettingsScreen() {
   const settings = useSettingsStore((state) => state.settings);
   const updateSettings = useSettingsStore((state) => state.updateSettings);
@@ -61,6 +70,13 @@ export function SettingsScreen() {
   const [newUnit, setNewUnit] = useState<ActivityUnit>("reps");
   const [status, setStatus] = useState("");
   const [profiles, setProfiles] = useState<LocalProfile[]>([]);
+  const [profileEditing, setProfileEditing] = useState(false);
+  const [profileDraft, setProfileDraft] = useState<ProfileDraft>({
+    displayName: "",
+    weightKg: "",
+    heightCm: "",
+    goalWeightKg: ""
+  });
   const [heroStats, setHeroStats] = useState<HeroStats>({
     progress: { id: "user", totalXP: 0, level: 1, updatedAt: "" },
     workouts: [],
@@ -100,6 +116,19 @@ export function SettingsScreen() {
     void loadHeroStats();
     void loadProfiles();
   }, [loadActivities, loadHeroStats, loadProfiles]);
+
+  useEffect(() => {
+    if (!settings || profileEditing) {
+      return;
+    }
+    const playerFallback = translate(settings.appLanguage, "common.player");
+    setProfileDraft({
+      displayName: settings.displayName ?? playerFallback,
+      weightKg: settings.weightKg?.toString() ?? "",
+      heightCm: settings.heightCm?.toString() ?? "",
+      goalWeightKg: settings.goalWeightKg?.toString() ?? ""
+    });
+  }, [profileEditing, settings]);
 
   const refreshProfileScopedData = async () => {
     await loadSettings();
@@ -168,46 +197,133 @@ export function SettingsScreen() {
     setStatus(t("settings.allDataReset"));
   };
 
+  const saveProfileDraft = async () => {
+    if (!settings) {
+      return;
+    }
+    const nextName = profileDraft.displayName.trim() || t("common.player");
+    const nextWeight = parseOptionalProfileNumber(profileDraft.weightKg);
+    const nextHeight = parseOptionalProfileNumber(profileDraft.heightCm);
+    const nextGoalWeight = parseOptionalProfileNumber(profileDraft.goalWeightKg);
+    const updates: Partial<
+      Pick<Settings, "displayName" | "weightKg" | "heightCm" | "goalWeightKg">
+    > = { displayName: nextName };
+    if (nextWeight !== undefined) {
+      updates.weightKg = nextWeight;
+    }
+    if (nextHeight !== undefined) {
+      updates.heightCm = nextHeight;
+    }
+    if (nextGoalWeight !== undefined) {
+      updates.goalWeightKg = nextGoalWeight;
+    }
+
+    await createProfileHistoryEntries([
+      {
+        field: "displayName",
+        previousValue: settings.displayName,
+        nextValue: nextName
+      },
+      {
+        field: "weightKg",
+        previousValue: settings.weightKg?.toString(),
+        nextValue: nextWeight?.toString()
+      },
+      {
+        field: "heightCm",
+        previousValue: settings.heightCm?.toString(),
+        nextValue: nextHeight?.toString()
+      },
+      {
+        field: "goalWeightKg",
+        previousValue: settings.goalWeightKg?.toString(),
+        nextValue: nextGoalWeight?.toString()
+      }
+    ]);
+    await updateSettings(updates);
+    await refreshProfileScopedData();
+    setProfileEditing(false);
+    setStatus(t("settings.profileSaved"));
+  };
+
   return (
     <section className="space-y-4 lg:space-y-6">
       <ProfileHeroSection context="progress" variant="compact" />
       <div className="grid gap-4 lg:grid-cols-[22rem_minmax(0,1fr)] xl:grid-cols-[24rem_minmax(0,1fr)]">
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
           <section className="app-card rounded-[1.75rem] p-5">
-            <h2 className="text-app text-lg font-black">{t("profile.profileHero")}</h2>
-            <label className="mt-4 block">
-              <span className="text-app-soft mb-2 block text-sm font-bold">
-                {t("profile.displayName")}
-              </span>
-              <input
-                className="focus-ring app-inset min-h-12 w-full rounded-2xl px-4 text-[#F8FAFC]"
-                onChange={(event) => void updateSettings({ displayName: event.target.value })}
-                value={settings?.displayName ?? t("common.player")}
-              />
-            </label>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <ProfileNumberField
-                label={t("profile.weightKg")}
-                onChange={(value) =>
-                  void updateSettings(value === undefined ? {} : { weightKg: value })
-                }
-                value={settings?.weightKg}
-              />
-              <ProfileNumberField
-                label={t("profile.heightCm")}
-                onChange={(value) =>
-                  void updateSettings(value === undefined ? {} : { heightCm: value })
-                }
-                value={settings?.heightCm}
-              />
-              <ProfileNumberField
-                label={t("profile.goalWeightKg")}
-                onChange={(value) =>
-                  void updateSettings(value === undefined ? {} : { goalWeightKg: value })
-                }
-                value={settings?.goalWeightKg}
-              />
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-app text-lg font-black">{t("profile.profileHero")}</h2>
+              <button
+                className="focus-ring rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-black text-[var(--accent-contrast)]"
+                onClick={() => setProfileEditing((current) => !current)}
+                type="button"
+              >
+                {profileEditing ? t("common.cancel") : t("common.edit")}
+              </button>
             </div>
+            {profileEditing ? (
+              <div className="mt-4 grid gap-3">
+                <ProfileTextField
+                  label={t("profile.displayName")}
+                  onChange={(value) =>
+                    setProfileDraft((current) => ({ ...current, displayName: value }))
+                  }
+                  value={profileDraft.displayName}
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <ProfileTextField
+                    inputMode="decimal"
+                    label={t("profile.weightKg")}
+                    onChange={(value) =>
+                      setProfileDraft((current) => ({ ...current, weightKg: value }))
+                    }
+                    step="0.1"
+                    type="number"
+                    value={profileDraft.weightKg}
+                  />
+                  <ProfileTextField
+                    inputMode="numeric"
+                    label={t("profile.heightCm")}
+                    onChange={(value) =>
+                      setProfileDraft((current) => ({ ...current, heightCm: value }))
+                    }
+                    step="1"
+                    type="number"
+                    value={profileDraft.heightCm}
+                  />
+                  <ProfileTextField
+                    inputMode="decimal"
+                    label={t("profile.goalWeightKg")}
+                    onChange={(value) =>
+                      setProfileDraft((current) => ({ ...current, goalWeightKg: value }))
+                    }
+                    step="0.1"
+                    type="number"
+                    value={profileDraft.goalWeightKg}
+                  />
+                </div>
+                <NeomorphicButton onClick={() => void saveProfileDraft()} variant="primary">
+                  {t("common.save")}
+                </NeomorphicButton>
+              </div>
+            ) : (
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <ProfilePreview label={t("profile.displayName")} value={settings?.displayName} />
+                <ProfilePreview
+                  label={t("profile.weightKg")}
+                  value={formatOptionalMetric(settings?.weightKg, "kg", t)}
+                />
+                <ProfilePreview
+                  label={t("profile.heightCm")}
+                  value={formatOptionalMetric(settings?.heightCm, "cm", t)}
+                />
+                <ProfilePreview
+                  label={t("profile.goalWeightKg")}
+                  value={formatOptionalMetric(settings?.goalWeightKg, "kg", t)}
+                />
+              </div>
+            )}
             <div className="mt-4 rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-inset)] p-3">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-app text-sm font-black">{t("settings.localProfiles")}</h3>
@@ -524,31 +640,53 @@ function HeroMetric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ProfileNumberField({
+function ProfilePreview({ label, value }: { label: string; value?: string | undefined }) {
+  return (
+    <div className="app-inset min-w-0 rounded-2xl p-3">
+      <p className="text-app-muted text-xs font-black uppercase tracking-[0.1em]">{label}</p>
+      <p className="text-app mt-1 truncate text-sm font-black">{value || "--"}</p>
+    </div>
+  );
+}
+
+function ProfileTextField({
   label,
   value,
-  onChange
+  onChange,
+  type = "text",
+  inputMode,
+  step
 }: {
   label: string;
-  value?: number | undefined;
-  onChange: (value: number | undefined) => void;
+  value: string;
+  onChange: (value: string) => void;
+  type?: "text" | "number";
+  inputMode?: "text" | "numeric" | "decimal" | undefined;
+  step?: string | undefined;
 }) {
   return (
     <label className="block">
       <span className="text-app-soft mb-1 block text-xs font-bold">{label}</span>
       <input
         className="focus-ring app-inset min-h-11 w-full rounded-2xl px-3 text-app"
+        inputMode={inputMode}
         min={0}
-        onBlur={(event) => {
-          const parsed = Number(event.target.value);
-          onChange(event.target.value.trim() && Number.isFinite(parsed) ? parsed : undefined);
-        }}
-        step="0.1"
-        type="number"
-        defaultValue={value ?? ""}
+        onChange={(event) => onChange(event.target.value)}
+        step={step}
+        type={type}
+        value={value}
       />
     </label>
   );
+}
+
+function formatOptionalMetric(value: number | undefined, unit: string, t: (key: string) => string) {
+  return value === undefined ? t("common.optional") : `${value} ${unit}`;
+}
+
+function parseOptionalProfileNumber(value: string) {
+  const parsed = Number(value);
+  return value.trim() && Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
 }
 
 function SegmentedSetting({

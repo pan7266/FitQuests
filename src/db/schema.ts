@@ -1,7 +1,7 @@
 export type ActivityUnit = "reps" | "seconds" | "distance" | "weight";
 export type ActivityType = "strength" | "timed" | "cardio";
 export type WorkoutMode = "live" | "setEntry" | "timed" | "cardio";
-export type UiStyle = "neomorphism" | "glassmorphism" | "material";
+export type UiStyle = "neomorphism" | "glassmorphism" | "material" | "ios";
 export type ColorMode = "dark" | "light";
 export type ViewMode = "basic" | "advanced";
 export type UiDensity = "cozy" | "compact";
@@ -42,6 +42,15 @@ export interface LocalProfile {
   onboardingCompleted: boolean;
   active: boolean;
   lastUsedAt: string;
+}
+
+export interface ProfileHistoryEntry {
+  id: string;
+  profileId: string;
+  field: "displayName" | "weightKg" | "heightCm" | "goalWeightKg";
+  previousValue?: string;
+  nextValue?: string;
+  createdAt: string;
 }
 
 export interface AppMeta {
@@ -430,6 +439,7 @@ export interface ExportPayload {
   version: 1;
   exportedAt: string;
   profiles: LocalProfile[];
+  profileHistory: ProfileHistoryEntry[];
   appMeta: AppMeta[];
   activities: Activity[];
   trainLogs: TrainLog[];

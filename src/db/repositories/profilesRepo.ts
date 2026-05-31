@@ -14,12 +14,12 @@ import type {
 } from "../schema";
 
 const DEFAULT_PROFILE_NAME = "Player";
-const CURRENT_SCHEMA_VERSION = 6;
+const CURRENT_SCHEMA_VERSION = 7;
 
 const normalizeProfileName = (name?: string) => name?.trim() || DEFAULT_PROFILE_NAME;
 
 const normalizeUiStyle = (value?: string): UiStyle =>
-  value === "glassmorphism" || value === "material" ? value : "neomorphism";
+  value === "glassmorphism" || value === "material" || value === "ios" ? value : "neomorphism";
 
 const normalizeColorMode = (value?: string): ColorMode => (value === "light" ? "light" : "dark");
 
@@ -243,6 +243,7 @@ export const deleteProfile = async (profileId: string, database: PenRepsDatabase
     "rw",
     [
       database.profiles,
+      database.profileHistory,
       database.appMeta,
       database.settings,
       database.trainLogs,
@@ -258,6 +259,7 @@ export const deleteProfile = async (profileId: string, database: PenRepsDatabase
     async () => {
       await Promise.all([
         database.trainLogs.where("profileId").equals(profileId).delete(),
+        database.profileHistory.where("profileId").equals(profileId).delete(),
         database.adventureProgress.where("profileId").equals(profileId).delete(),
         database.workouts.where("profileId").equals(profileId).delete(),
         database.workoutSets.where("profileId").equals(profileId).delete(),

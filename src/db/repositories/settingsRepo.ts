@@ -36,11 +36,13 @@ const normalizeSettings = (settings: Settings): Settings => {
   const legacyUiStyle = settings.uiStyle as string;
   const existingDisplayName = settings.displayName?.trim();
   const uiStyle =
-    legacyUiStyle === "material"
-      ? "material"
-      : legacyUiStyle === "glassmorphism"
-        ? "glassmorphism"
-        : "neomorphism";
+    legacyUiStyle === "ios"
+      ? "ios"
+      : legacyUiStyle === "material"
+        ? "material"
+        : legacyUiStyle === "glassmorphism"
+          ? "glassmorphism"
+          : "neomorphism";
 
   return {
     ...settings,

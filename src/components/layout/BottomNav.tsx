@@ -59,9 +59,9 @@ export function BottomNav({ activeTab, onChange }: BottomNavProps) {
   return (
     <nav
       aria-label="Main navigation"
-      className="fixed inset-x-0 bottom-0 z-30 border-t px-3 pb-[calc(var(--safe-bottom)+0.55rem)] pt-2 backdrop-blur-xl"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--border-soft)] bg-[color-mix(in_srgb,var(--surface)_78%,transparent)] px-3 pb-[calc(var(--safe-bottom)+0.45rem)] pt-2 shadow-[0_-14px_34px_rgba(0,0,0,0.18)] backdrop-blur-2xl"
     >
-      <div className="mx-auto grid max-w-md grid-cols-5 gap-1 lg:max-w-3xl">
+      <div className="mx-auto grid max-w-md grid-cols-5 gap-1 rounded-[1.45rem] lg:max-w-3xl">
         {appRoutes.map((route) => {
           const Icon = icons[route.id];
           const isActive = route.id === activeTab;
@@ -70,9 +70,9 @@ export function BottomNav({ activeTab, onChange }: BottomNavProps) {
             <button
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "focus-ring flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[0.68rem] font-bold transition",
+                "focus-ring flex min-h-13 flex-col items-center justify-center gap-1 rounded-[1.15rem] px-1 text-[0.64rem] font-bold transition active:scale-[0.97]",
                 isActive
-                  ? "bg-[var(--accent)] text-white shadow-[var(--accent-glow)]"
+                  ? "bg-[color-mix(in_srgb,var(--accent)_16%,var(--surface))] text-[var(--accent)] shadow-[inset_0_0_0_0.7px_var(--accent)]"
                   : "text-[#94A3B8] hover:bg-[var(--hover-soft)] hover:text-[var(--text-primary)]"
               )}
               key={route.id}

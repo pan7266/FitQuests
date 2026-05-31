@@ -24,7 +24,7 @@ export function ThemeSelector({ uiStyle, colorMode, onChange }: ThemeSelectorPro
     <div className="space-y-5">
       <fieldset>
         <legend className="text-app mb-3 text-lg font-black">{t("theme.style")}</legend>
-        <div className="theme-choice-grid grid gap-3 md:grid-cols-3">
+        <div className="theme-choice-grid grid gap-3 md:grid-cols-4">
           {THEME_STYLE_OPTIONS.map((choice) => {
             const selected = choice.uiStyle === uiStyle;
             return (
@@ -60,7 +60,7 @@ function ThemePreviewSwatch({ uiStyle }: { uiStyle: UiStyle }) {
       aria-hidden="true"
       className={cn(
         "theme-preview-swatch mb-4 grid h-14 w-24 grid-cols-[1fr_2fr] gap-2 rounded-2xl border p-2",
-        uiStyle === "material"
+        uiStyle === "material" || uiStyle === "ios"
           ? "border-slate-300 bg-white"
           : "border-[var(--border-soft)] bg-[var(--surface-inset)]",
         uiStyle === "glassmorphism" && "backdrop-blur"

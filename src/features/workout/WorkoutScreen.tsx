@@ -510,18 +510,6 @@ export function WorkoutScreen() {
           <h1 className="text-app text-3xl font-black">{t("common.train")}</h1>
         </header>
         <ProfileHeroSection context="train" variant="compact" />
-        <TrainSkillsPanel
-          hero={heroProgress}
-          onUpgrade={async (slug) => {
-            await upgradeHeroSkill(slug);
-            const adventure = await listAdventureState();
-            setHeroProgress(adventure.hero);
-            setHeroSkills(adventure.skills);
-            window.dispatchEvent(new Event("fit-quest-adventure-updated"));
-          }}
-          skills={heroSkills}
-          t={t}
-        />
         <div className="app-card rounded-[1.75rem] p-5">
           <h2 className="text-app text-xl font-black">{t("train.chooseActivity")}</h2>
           <p className="text-app-soft mt-2 text-sm leading-6">
@@ -539,6 +527,18 @@ export function WorkoutScreen() {
             />
           </div>
         </div>
+        <TrainSkillsPanel
+          hero={heroProgress}
+          onUpgrade={async (slug) => {
+            await upgradeHeroSkill(slug);
+            const adventure = await listAdventureState();
+            setHeroProgress(adventure.hero);
+            setHeroSkills(adventure.skills);
+            window.dispatchEvent(new Event("fit-quest-adventure-updated"));
+          }}
+          skills={heroSkills}
+          t={t}
+        />
         {selectedActivityId ? (
           <div className="sticky bottom-[calc(var(--safe-bottom)+5.5rem)] z-20 mx-auto max-w-md px-1">
             <button
@@ -1051,23 +1051,23 @@ function TrainSkillsPanel({
   }
 
   return (
-    <section className="app-card rounded-[1.75rem] p-5">
+    <section className="app-card rounded-[1.5rem] p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-app text-xl font-black">{t("adventure.upgradeHero")}</h2>
-          <p className="text-app-soft mt-1 text-sm">{t("adventure.upgradeHeroDescription")}</p>
+          <h2 className="text-app text-lg font-black">{t("adventure.upgradeHero")}</h2>
+          <p className="text-app-soft mt-0.5 text-xs">{t("adventure.upgradeHeroDescription")}</p>
         </div>
-        <span className="rounded-full bg-[var(--accent)] px-3 py-1 text-sm font-black text-[var(--accent-contrast)]">
+        <span className="rounded-full bg-[var(--accent)] px-2.5 py-1 text-xs font-black text-[var(--accent-contrast)]">
           {points} {t("profile.skillPoints")}
         </span>
       </div>
-      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
         {skills.map((skill) => (
-          <article className="app-inset rounded-2xl p-4" key={skill.id}>
+          <article className="app-inset rounded-2xl p-3" key={skill.id}>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-app font-black">{translateSkillName(skill.slug, t)}</h3>
-                <p className="text-app-soft mt-1 text-sm">
+                <p className="text-app-soft mt-1 text-xs leading-5">
                   {translateSkillDescription(skill.slug, t)}
                 </p>
               </div>
@@ -1076,7 +1076,7 @@ function TrainSkillsPanel({
               </span>
             </div>
             <button
-              className="focus-ring mt-4 min-h-11 w-full rounded-2xl bg-[var(--accent)] px-4 text-sm font-black text-[var(--accent-contrast)] disabled:bg-[var(--toggle-off)] disabled:text-[var(--text-muted)]"
+              className="focus-ring mt-3 min-h-9 w-full rounded-xl bg-[var(--accent)] px-3 text-xs font-black text-[var(--accent-contrast)] disabled:bg-[var(--toggle-off)] disabled:text-[var(--text-muted)]"
               disabled={points <= 0}
               onClick={() => void onUpgrade(skill.slug)}
               type="button"

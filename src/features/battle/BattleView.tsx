@@ -485,7 +485,9 @@ export function BattleView({ enemyId }: { enemyId: string }) {
                     pause: t("common.pause"),
                     repsCompleted: t("workout.completedReps"),
                     start: t("common.start"),
-                    undo: t("common.undo")
+                    undo: t("common.undo"),
+                    attack: ta("battle.attack"),
+                    hitProgress: ta("battle.hitProgress")
                   }}
                   onAttack={() => void attack()}
                   onDistanceChange={setDistanceKm}
@@ -573,6 +575,8 @@ function BattleInput({
     start: string;
     pause: string;
     distanceCompleted: string;
+    attack: string;
+    hitProgress: string;
   };
 }) {
   const current =
@@ -585,16 +589,12 @@ function BattleInput({
   return (
     <div className="mt-4 space-y-4">
       <button
-        aria-label="Hit progress"
+        aria-label={labels.hitProgress}
         className="focus-ring mx-auto grid h-36 w-36 place-items-center rounded-full bg-[conic-gradient(var(--accent)_var(--progress),var(--surface)_0)] p-2 transition active:scale-95 disabled:opacity-70"
-        disabled={hit.metric !== "reps" && !valid}
+        disabled={hit.metric !== "reps"}
         onClick={() => {
-          if (hit.metric === "reps" && !valid) {
+          if (hit.metric === "reps") {
             onRepChange(repValue + 1);
-            return;
-          }
-          if (valid) {
-            onAttack();
           }
         }}
         type="button"
@@ -674,6 +674,15 @@ function BattleInput({
           />
         </label>
       ) : null}
+
+      <button
+        className="focus-ring mx-auto block min-h-10 w-full max-w-xs rounded-xl bg-[var(--accent)] px-4 text-sm font-black text-[var(--accent-contrast)] shadow-[var(--accent-glow)] disabled:bg-[var(--toggle-off)] disabled:text-[var(--text-muted)] disabled:shadow-none"
+        disabled={!valid}
+        onClick={onAttack}
+        type="button"
+      >
+        {labels.attack}
+      </button>
     </div>
   );
 }

@@ -21,6 +21,9 @@ export function AccentColorControl({
   resetLabel
 }: AccentColorControlProps) {
   const hsv = hexToHsv(value);
+  const setHue = (nextHue: number) => onChange(hsvToHex((nextHue + 360) % 360, 100, hsv.value));
+  const setValue = (nextValue: number) =>
+    onChange(hsvToHex(hsv.hue, 100, clamp(nextValue, 0, 100)));
 
   const chooseFromMap = (event: PointerEvent<HTMLButtonElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -53,28 +56,48 @@ export function AccentColorControl({
     <fieldset>
       <legend className="text-app mb-3 text-lg font-black">{title}</legend>
       <div className="space-y-3">
-        <button
-          aria-label={hueLabel}
-          className="focus-ring accent-color-map relative h-52 w-full overflow-hidden rounded-[1.5rem] border border-[var(--border-soft)] shadow-[var(--shadow-inset)]"
-          onKeyDown={adjustFromKeyboard}
-          onPointerDown={chooseFromMap}
-          onPointerMove={(event) => {
-            if (event.buttons === 1) {
-              chooseFromMap(event);
-            }
-          }}
-          type="button"
-        >
-          <span
-            aria-hidden="true"
-            className="absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.45)]"
-            style={{
-              backgroundColor: value,
-              left: `${(hsv.hue / 360) * 100}%`,
-              top: `${100 - hsv.value}%`
+        <div className="grid grid-cols-[minmax(0,1fr)_2rem] gap-3 overflow-hidden">
+          <button
+            aria-label={hueLabel}
+            className="focus-ring accent-color-map relative h-52 w-full overflow-hidden rounded-[1.5rem] border border-[var(--border-soft)] shadow-[var(--shadow-inset)]"
+            onKeyDown={adjustFromKeyboard}
+            onPointerDown={chooseFromMap}
+            onPointerMove={(event) => {
+              if (event.buttons === 1) {
+                chooseFromMap(event);
+              }
             }}
+            type="button"
+          >
+            <span
+              aria-hidden="true"
+              className="absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.45)]"
+              style={{
+                backgroundColor: value,
+                left: `${(hsv.hue / 360) * 100}%`,
+                top: `${100 - hsv.value}%`
+              }}
+            />
+          </button>
+          <input
+            aria-label="Brightness"
+            className="accent-bw-slider h-52 w-8"
+            max={100}
+            min={0}
+            onChange={(event) => setValue(Number(event.target.value))}
+            type="range"
+            value={hsv.value}
           />
-        </button>
+        </div>
+        <input
+          aria-label={hueLabel}
+          className="accent-hue-slider h-8 w-full"
+          max={360}
+          min={0}
+          onChange={(event) => setHue(Number(event.target.value))}
+          type="range"
+          value={Math.round(hsv.hue)}
+        />
         <div className="flex flex-wrap items-center gap-3">
           <div
             aria-label="Accent preview"

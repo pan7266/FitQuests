@@ -21,6 +21,11 @@ export const THEME_STYLE_OPTIONS: ThemeStyleOption[] = [
     uiStyle: "material",
     titleKey: "theme.cleanMaterial",
     descriptionKey: "theme.cleanMaterialDescription"
+  },
+  {
+    uiStyle: "ios",
+    titleKey: "theme.nativeIos26",
+    descriptionKey: "theme.nativeIos26Description"
   }
 ];
 
