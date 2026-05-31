@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from "react";
 import type { AppTab } from "../../stores/appStore";
-import { APP_NAME } from "../../utils/appIdentity";
+import { APP_ICON_SRC, APP_NAME } from "../../utils/appIdentity";
 import { BottomNav } from "./BottomNav";
 
 interface AppShellProps extends PropsWithChildren {
@@ -19,12 +19,13 @@ export function AppShell({ activeTab, title, onTabChange, children }: AppShellPr
             {title}
           </h1>
         </div>
-        <div
-          aria-hidden="true"
-          className="flex h-12 w-12 items-center justify-center rounded-3xl bg-[var(--accent)] font-black text-white shadow-[var(--accent-glow)]"
-        >
-          FQ
-        </div>
+        <img
+          alt={`${APP_NAME} app icon`}
+          className="h-12 w-12 rounded-3xl border border-[var(--border-soft)] object-cover shadow-[var(--accent-glow)]"
+          height={48}
+          src={APP_ICON_SRC}
+          width={48}
+        />
       </header>
       <main className="flex-1">{children}</main>
       <BottomNav activeTab={activeTab} onChange={onTabChange} />

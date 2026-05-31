@@ -14,7 +14,7 @@ import { WorkoutScreen } from "../features/workout/WorkoutScreen";
 import { useAppStore } from "../stores/appStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useWorkoutStore } from "../stores/workoutStore";
-import { APP_NAME } from "../utils/appIdentity";
+import { APP_ICON_SRC, APP_NAME } from "../utils/appIdentity";
 import { getAccentStyle } from "../utils/colors";
 import { reportTranslationIssuesInDevelopment } from "../utils/i18n";
 import { getThemeClassName } from "../utils/theme";
@@ -94,6 +94,13 @@ export default function App() {
         style={getAccentStyle(settings?.accentColor)}
       >
         <div className="app-card rounded-[1.75rem] p-6 text-center">
+          <img
+            alt={`${APP_NAME} app icon`}
+            className="mx-auto mb-4 h-16 w-16 rounded-[1.35rem] border border-[var(--border-soft)] object-cover shadow-[var(--accent-glow)]"
+            height={64}
+            src={APP_ICON_SRC}
+            width={64}
+          />
           <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--accent)]">
             {APP_NAME}
           </p>
