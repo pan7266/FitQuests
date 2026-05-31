@@ -21,6 +21,7 @@ import type {
   ExportPayload,
   HeroProgress,
   LocalProfile,
+  ProfileHistoryEntry,
   Settings,
   TrainLog,
   UserProgress,
@@ -53,7 +54,8 @@ const isProfile = (value: unknown): value is LocalProfile => {
     isRecord(value.selectedTheme) &&
     (value.selectedTheme.uiStyle === "neomorphism" ||
       value.selectedTheme.uiStyle === "glassmorphism" ||
-      value.selectedTheme.uiStyle === "material") &&
+      value.selectedTheme.uiStyle === "material" ||
+      value.selectedTheme.uiStyle === "ios") &&
     (value.selectedTheme.colorMode === "dark" || value.selectedTheme.colorMode === "light") &&
     isString(value.selectedTheme.accentColor) &&
     (value.selectedTheme.uiDensity === undefined ||
@@ -62,6 +64,24 @@ const isProfile = (value: unknown): value is LocalProfile => {
     isBoolean(value.onboardingCompleted) &&
     isBoolean(value.active) &&
     isString(value.lastUsedAt)
+  );
+};
+
+const isProfileHistoryEntry = (value: unknown): value is ProfileHistoryEntry => {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    isString(value.id) &&
+    isString(value.profileId) &&
+    (value.field === "displayName" ||
+      value.field === "weightKg" ||
+      value.field === "heightCm" ||
+      value.field === "goalWeightKg") &&
+    (value.previousValue === undefined || isString(value.previousValue)) &&
+    (value.nextValue === undefined || isString(value.nextValue)) &&
+    isString(value.createdAt)
   );
 };
 
@@ -228,7 +248,8 @@ const isSettings = (value: unknown): value is Settings => {
     value.themeMode === "dark" &&
     (value.uiStyle === "neomorphism" ||
       value.uiStyle === "glassmorphism" ||
-      value.uiStyle === "material") &&
+      value.uiStyle === "material" ||
+      value.uiStyle === "ios") &&
     (value.colorMode === "dark" || value.colorMode === "light") &&
     isString(value.accentColor) &&
     (value.viewMode === undefined || value.viewMode === "basic" || value.viewMode === "advanced") &&
@@ -580,6 +601,7 @@ export const exportAppData = async (database: PenRepsDatabase = db): Promise<Exp
   version: 1,
   exportedAt: nowIso(),
   profiles: await database.profiles.toArray(),
+  profileHistory: await database.profileHistory.toArray(),
   appMeta: await database.appMeta.toArray(),
   activities: await database.activities.toArray(),
   trainLogs: await database.trainLogs.toArray(),
@@ -618,6 +640,8 @@ export const validateImportPayload = (value: unknown): value is ExportPayload =>
     isString(value.exportedAt) &&
     (value.profiles === undefined ||
       (Array.isArray(value.profiles) && value.profiles.every(isProfile))) &&
+    (value.profileHistory === undefined ||
+      (Array.isArray(value.profileHistory) && value.profileHistory.every(isProfileHistoryEntry))) &&
     (value.appMeta === undefined ||
       (Array.isArray(value.appMeta) && value.appMeta.every(isAppMeta))) &&
     Array.isArray(value.activities) &&
@@ -686,6 +710,7 @@ export const replaceAllData = async (payload: ExportPayload, database: PenRepsDa
     "rw",
     [
       database.profiles,
+      database.profileHistory,
       database.appMeta,
       database.activities,
       database.trainLogs,
@@ -712,6 +737,7 @@ export const replaceAllData = async (payload: ExportPayload, database: PenRepsDa
     async () => {
       await Promise.all([
         database.profiles.clear(),
+        database.profileHistory.clear(),
         database.appMeta.clear(),
         database.activities.clear(),
         database.trainLogs.clear(),
@@ -736,6 +762,7 @@ export const replaceAllData = async (payload: ExportPayload, database: PenRepsDa
         database.activeWorkoutDraft.clear()
       ]);
       await database.profiles.bulkPut(payload.profiles ?? []);
+      await database.profileHistory.bulkPut(payload.profileHistory ?? []);
       await database.appMeta.bulkPut(payload.appMeta ?? []);
       await database.activities.bulkPut(payload.activities);
       await database.trainLogs.bulkPut(payload.trainLogs ?? []);
@@ -772,6 +799,7 @@ export const resetAllData = async (database: PenRepsDatabase = db) => {
     "rw",
     [
       database.profiles,
+      database.profileHistory,
       database.appMeta,
       database.activities,
       database.trainLogs,
@@ -798,6 +826,7 @@ export const resetAllData = async (database: PenRepsDatabase = db) => {
     async () => {
       await Promise.all([
         database.profiles.clear(),
+        database.profileHistory.clear(),
         database.appMeta.clear(),
         database.activities.clear(),
         database.trainLogs.clear(),

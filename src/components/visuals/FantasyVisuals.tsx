@@ -220,7 +220,7 @@ function RealmIllustration({ visual, locked }: { visual: RealmVisual; locked: bo
     <svg
       aria-hidden="true"
       className="absolute inset-0 h-full w-full"
-      preserveAspectRatio="none"
+      preserveAspectRatio="xMidYMid slice"
       viewBox="0 0 600 240"
     >
       <path
@@ -240,6 +240,19 @@ function RealmIllustration({ visual, locked }: { visual: RealmVisual; locked: bo
         strokeWidth="10"
       />
       <path
+        d="M300 46C240 62 217 95 217 198M300 46C360 62 383 95 383 198"
+        fill="none"
+        opacity={locked ? "0.22" : "0.42"}
+        stroke="#F8FAFC"
+        strokeLinecap="round"
+        strokeWidth="3"
+      />
+      <path
+        d="M292 200L300 158L308 200M246 212L252 178L258 212M346 212L352 178L358 212"
+        fill="#020617"
+        opacity="0.86"
+      />
+      <path
         d="M118 218C205 192 304 190 482 218"
         fill="none"
         stroke="#F8FAFC"
@@ -247,6 +260,7 @@ function RealmIllustration({ visual, locked }: { visual: RealmVisual; locked: bo
         strokeWidth="8"
       />
       <circle cx="500" cy="56" fill={visual.themeColor} opacity="0.24" r="34" />
+      <circle cx="300" cy="86" fill={visual.themeColor} opacity="0.16" r="48" />
     </svg>
   );
 }
@@ -256,20 +270,26 @@ const renderMonsterShape = (visual: EnemyVisual, color: string, glowId: string) 
     return (
       <g filter={`url(#${glowId})`}>
         <path
-          d="M24 97L33 45L48 28L60 46L72 28L87 45L96 97Z"
+          d="M18 102L30 43L45 26L60 44L75 26L90 43L102 102L78 88L68 106L60 91L52 106L42 88Z"
           fill="#09090B"
           stroke={color}
           strokeWidth="5"
         />
         <path
-          d="M37 50L26 24L50 38M83 50L94 24L70 38"
+          d="M34 48L19 18L50 36M86 48L101 18L70 36"
           fill="none"
           stroke={color}
           strokeLinecap="round"
           strokeWidth="6"
         />
-        <path d="M43 66L55 62M77 66L65 62" stroke="#F8FAFC" strokeLinecap="round" strokeWidth="5" />
-        <path d="M49 86H71" stroke={color} strokeLinecap="round" strokeWidth="5" />
+        <path d="M41 66L55 61M79 66L65 61" stroke="#F8FAFC" strokeLinecap="round" strokeWidth="5" />
+        <path
+          d="M44 84H76M32 102L16 112M88 102L104 112"
+          stroke={color}
+          strokeLinecap="round"
+          strokeWidth="5"
+        />
+        <path d="M60 44V96" stroke={color} strokeOpacity="0.58" strokeWidth="4" />
       </g>
     );
   }
@@ -339,16 +359,16 @@ const renderMonsterShape = (visual: EnemyVisual, color: string, glowId: string) 
   return (
     <g filter={`url(#${glowId})`}>
       <path
-        d="M30 85C30 50 43 34 60 34C77 34 90 50 90 85C90 97 78 104 60 104C42 104 30 97 30 85Z"
+        d="M28 92C28 57 42 35 60 35C78 35 92 57 92 92L78 84L70 104L60 91L50 104L42 84Z"
         fill="#080B12"
         stroke={color}
         strokeLinejoin="round"
         strokeWidth="5"
       />
-      <path d="M38 49L27 27M82 49L93 27" stroke={color} strokeLinecap="round" strokeWidth="5" />
-      <path d="M47 65L56 61M73 65L64 61" stroke="#F8FAFC" strokeLinecap="round" strokeWidth="5" />
+      <path d="M38 50L25 22M82 50L95 22" stroke={color} strokeLinecap="round" strokeWidth="5" />
+      <path d="M46 65L56 60M74 65L64 60" stroke="#F8FAFC" strokeLinecap="round" strokeWidth="5" />
       <path
-        d="M50 86C56 90 64 90 70 86"
+        d="M34 95L23 109M86 95L97 109M51 84H69"
         fill="none"
         stroke={color}
         strokeLinecap="round"

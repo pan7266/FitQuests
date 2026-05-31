@@ -17,6 +17,7 @@ import type {
   HeroProgress,
   HeroSkill,
   LocalProfile,
+  ProfileHistoryEntry,
   Settings,
   TrainLog,
   UserProgress,
@@ -27,6 +28,7 @@ import type {
 
 export class PenRepsDatabase extends Dexie {
   profiles!: Table<LocalProfile, string>;
+  profileHistory!: Table<ProfileHistoryEntry, string>;
   appMeta!: Table<AppMeta, string>;
   activities!: Table<Activity, string>;
   trainLogs!: Table<TrainLog, string>;
@@ -154,6 +156,37 @@ export class PenRepsDatabase extends Dexie {
 
     this.version(6).stores({
       profiles: "id, active, lastUsedAt, updatedAt",
+      appMeta: "id, activeProfileId, updatedAt",
+      activities: "id, &slug, unit, activityType, isDefault, isArchived, updatedAt",
+      trainLogs: "id, profileId, workoutId, exerciseId, trackingType, createdAt, updatedAt",
+      adventureProgress: "id, profileId, selectedRealmId, updatedAt",
+      workouts:
+        "id, profileId, activityId, localDate, startedAt, endedAt, mode, [profileId+localDate], [activityId+localDate]",
+      workoutSets:
+        "id, profileId, workoutId, activityId, localDate, startedAt, endedAt, [workoutId+setIndex], [activityId+localDate]",
+      workoutCardioMetrics:
+        "id, profileId, workoutId, activityId, localDate, [activityId+localDate]",
+      dailySummaries:
+        "id, profileId, localDate, activityId, [profileId+localDate], [activityId+localDate]",
+      settings: "id, profileId",
+      achievements: "id, slug, activityId, unlockedAt",
+      userProgress: "id",
+      heroProgress: "id, profileId",
+      heroSkills: "id, slug",
+      adventureRegions: "id, status, isUnlocked, bossId",
+      adventureBosses: "id, slug, regionId, status",
+      adventureChests: "id, slug, realmId, status, updatedAt",
+      adventureHitRequirements: "id, enemyId, activityId, activitySlug, activityType, metric",
+      adventureMobs: "id, slug, realmId, enemyType, status, updatedAt",
+      adventureMobRequirements: "id, mobId, activityId, activitySlug, activityType, metric",
+      adventureEvents: "id, profileId, type, localDate, createdAt",
+      activeAdventureTarget: "id, realmId, mobId, bossId, updatedAt",
+      activeWorkoutDraft: "id, profileId, activityId, updatedAt"
+    });
+
+    this.version(7).stores({
+      profiles: "id, active, lastUsedAt, updatedAt",
+      profileHistory: "id, profileId, field, createdAt",
       appMeta: "id, activeProfileId, updatedAt",
       activities: "id, &slug, unit, activityType, isDefault, isArchived, updatedAt",
       trainLogs: "id, profileId, workoutId, exerciseId, trackingType, createdAt, updatedAt",

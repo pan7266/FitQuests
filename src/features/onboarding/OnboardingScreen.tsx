@@ -1,4 +1,4 @@
-import { ArrowRight, Flame, Swords, Trophy } from "lucide-react";
+import { ArrowLeft, ArrowRight, Flame, Swords, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { AccentColorControl } from "../../components/controls/AccentColorControl";
@@ -61,6 +61,7 @@ const goalActivities = [
 
 const en = {
   skip: "Skip",
+  back: "Back",
   next: "Next",
   start: "Start First Fight",
   step: "Step",
@@ -91,6 +92,7 @@ const en = {
 
 const el: typeof en = {
   skip: "Παράλειψη",
+  back: "Πίσω",
   next: "Επόμενο",
   start: "Έναρξη πρώτης μάχης",
   step: "Βήμα",
@@ -140,6 +142,9 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
   const adventureIndex = index - 5;
   const adventureStep = adventureSteps[adventureIndex];
   const Icon = adventureStep?.icon ?? Swords;
+  const showBottomNext = index === 2 || index === 3 || index === 4 || isLast;
+  const goNext = () => setIndex((current) => Math.min(totalSteps - 1, current + 1));
+  const goBack = () => setIndex((current) => Math.max(0, current - 1));
 
   useEffect(() => {
     if (!settings) {
@@ -182,6 +187,17 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
 
     void loadGoalActivities();
   }, []);
+
+  useEffect(() => {
+    if (index !== 5 && index !== 6) {
+      return undefined;
+    }
+    const timeout = window.setTimeout(
+      () => setIndex((current) => Math.min(totalSteps - 1, current + 1)),
+      1600
+    );
+    return () => window.clearTimeout(timeout);
+  }, [index]);
 
   const persistSettings = (updates: Parameters<typeof updateSettings>[0]) => {
     void updateSettings(updates);
@@ -243,7 +259,19 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-3xl flex-col px-5 pb-[calc(var(--safe-bottom)+1.25rem)] pt-[calc(var(--safe-top)+1.25rem)]">
-      <div className="flex justify-between">
+      <div className="flex items-center justify-between gap-3">
+        {index > 0 ? (
+          <button
+            className="focus-ring flex min-h-10 items-center gap-2 rounded-2xl px-3 text-sm font-black text-app-soft hover:bg-[var(--hover-soft)]"
+            onClick={goBack}
+            type="button"
+          >
+            <ArrowLeft aria-hidden="true" size={16} />
+            {labels.back}
+          </button>
+        ) : (
+          <span />
+        )}
         <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--accent)]">
           {APP_NAME}
         </p>
@@ -268,6 +296,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
                 onClick={() => {
                   setViewMode("basic");
                   persistSettings({ viewMode: "basic" });
+                  goNext();
                 }}
                 selected={viewMode === "basic"}
               />
@@ -277,6 +306,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
                 onClick={() => {
                   setViewMode("advanced");
                   persistSettings({ viewMode: "advanced" });
+                  goNext();
                 }}
                 selected={viewMode === "advanced"}
               />
@@ -291,6 +321,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
                 onClick={() => {
                   setAppLanguage("en");
                   persistSettings({ appLanguage: "en" });
+                  goNext();
                 }}
                 selected={appLanguage === "en"}
               />
@@ -299,6 +330,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
                 onClick={() => {
                   setAppLanguage("el");
                   persistSettings({ appLanguage: "el" });
+                  goNext();
                 }}
                 selected={appLanguage === "el"}
               />
@@ -362,6 +394,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
                 value={displayName}
               />
               <TextField
+                inputMode="decimal"
                 label={labels.weight}
                 onChange={(value) => {
                   setWeightKg(value);
@@ -370,10 +403,12 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
                     persistSettings({ weightKg: parsed });
                   }
                 }}
+                step="0.1"
                 type="number"
                 value={weightKg}
               />
               <TextField
+                inputMode="numeric"
                 label={labels.height}
                 onChange={(value) => {
                   setHeightCm(value);
@@ -382,10 +417,12 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
                     persistSettings({ heightCm: parsed });
                   }
                 }}
+                step="1"
                 type="number"
                 value={heightCm}
               />
               <TextField
+                inputMode="decimal"
                 label={labels.goalWeight}
                 onChange={(value) => {
                   setGoalWeightKg(value);
@@ -394,6 +431,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
                     persistSettings({ goalWeightKg: parsed });
                   }
                 }}
+                step="0.1"
                 type="number"
                 value={goalWeightKg}
               />
@@ -405,9 +443,11 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
             <div className="grid gap-3 sm:grid-cols-2">
               {goalActivities.map((activity) => (
                 <TextField
+                  inputMode={activity.unit === "km" ? "decimal" : "numeric"}
                   key={activity.slug}
                   label={`${appLanguage === "el" ? activity.labelEl : activity.label} (${activity.unit})`}
                   onChange={(value) => updateDailyGoal(activity.slug, value, activity.unit)}
+                  step={activity.unit === "km" ? "0.1" : "1"}
                   type="number"
                   value={dailyGoals[activity.slug] ?? ""}
                 />
@@ -427,6 +467,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
             <p className="text-app-soft mx-auto mt-4 max-w-96 text-base leading-7">
               {appLanguage === "el" ? adventureStep.descriptionEl : adventureStep.description}
             </p>
+            {!isLast ? <BuildingProfileAnimation /> : null}
           </section>
         ) : null}
         <div aria-hidden="true" className="mt-8 flex justify-center gap-2">
@@ -445,14 +486,16 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
           ))}
         </div>
       </section>
-      <NeomorphicButton
-        className="flex items-center justify-center gap-2"
-        onClick={() => (isLast ? onComplete(payload) : setIndex((current) => current + 1))}
-        variant="primary"
-      >
-        {isLast ? labels.start : labels.next}
-        <ArrowRight aria-hidden="true" size={18} />
-      </NeomorphicButton>
+      {showBottomNext ? (
+        <NeomorphicButton
+          className="flex items-center justify-center gap-2"
+          onClick={() => (isLast ? onComplete(payload) : goNext())}
+          variant="primary"
+        >
+          {isLast ? labels.start : labels.next}
+          <ArrowRight aria-hidden="true" size={18} />
+        </NeomorphicButton>
+      ) : null}
     </main>
   );
 }
@@ -508,25 +551,43 @@ function TextField({
   label,
   value,
   onChange,
-  type = "text"
+  type = "text",
+  inputMode,
+  step
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   type?: "text" | "number";
+  inputMode?: "text" | "numeric" | "decimal" | undefined;
+  step?: string | undefined;
 }) {
   return (
     <label className="block">
       <span className="text-app-soft mb-2 block text-sm font-bold">{label}</span>
       <input
         className="focus-ring app-inset min-h-12 w-full rounded-2xl px-4 text-app"
+        inputMode={inputMode}
         min={0}
         onChange={(event) => onChange(event.target.value)}
-        step="0.1"
+        step={step}
         type={type}
         value={value}
       />
     </label>
+  );
+}
+
+function BuildingProfileAnimation() {
+  return (
+    <div
+      aria-hidden="true"
+      className="mx-auto mt-8 flex max-w-xs items-center justify-center gap-2 rounded-full border border-[var(--border-soft)] bg-[var(--surface-inset)] px-4 py-3"
+    >
+      <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--accent)]" />
+      <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--accent)] [animation-delay:160ms]" />
+      <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--accent)] [animation-delay:320ms]" />
+    </div>
   );
 }
 

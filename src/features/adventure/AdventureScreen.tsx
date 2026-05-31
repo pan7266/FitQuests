@@ -1,5 +1,5 @@
-import { Award, Check, Lock, Search, Swords } from "lucide-react";
-import type { ReactNode } from "react";
+import { ArrowLeft, Award, Check, Lock, Search, Swords } from "lucide-react";
+import type { ReactNode, TouchEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ProfileHeroSection } from "../../components/profile/ProfileHeroSection";
 import { RecordCard } from "../../components/records/RecordCard";
@@ -123,6 +123,7 @@ export function AdventureScreen() {
   const [collapsedHowTo, setCollapsedHowTo] = useState(false);
   const [chestReward, setChestReward] = useState<string | undefined>();
   const [preFightNode, setPreFightNode] = useState<RealmNode | undefined>();
+  const [swipeStart, setSwipeStart] = useState<{ x: number; y: number } | undefined>();
 
   const load = useCallback(async () => {
     const [nextActivities, adventure] = await Promise.all([
@@ -245,15 +246,40 @@ export function AdventureScreen() {
   }
 
   const showRealmDetail = realmId !== undefined;
+  const handleSwipeBackEnd = (event: TouchEvent<HTMLElement>) => {
+    if (!showRealmDetail || !swipeStart) {
+      return;
+    }
+    const touch = event.changedTouches.item(0);
+    if (!touch) {
+      return;
+    }
+    const deltaX = touch.clientX - swipeStart.x;
+    const deltaY = Math.abs(touch.clientY - swipeStart.y);
+    if (swipeStart.x < 36 && deltaX > 90 && deltaY < 70) {
+      setRealmId(undefined);
+    }
+    setSwipeStart(undefined);
+  };
 
   return (
-    <section className="space-y-4 lg:space-y-6">
+    <section
+      className="space-y-4 lg:space-y-6"
+      onTouchEnd={handleSwipeBackEnd}
+      onTouchStart={(event) => {
+        const touch = event.changedTouches.item(0);
+        if (touch) {
+          setSwipeStart({ x: touch.clientX, y: touch.clientY });
+        }
+      }}
+    >
       {!showRealmDetail ? null : (
         <button
-          className="focus-ring rounded-2xl px-3 py-2 text-sm font-black text-app-soft hover:bg-[var(--hover-soft)]"
+          className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-inset)] px-4 text-sm font-black text-app hover:bg-[var(--hover-soft)]"
           onClick={() => setRealmId(undefined)}
           type="button"
         >
+          <ArrowLeft aria-hidden="true" size={17} />
           {t("adventure.backToRealms")}
         </button>
       )}
@@ -312,7 +338,7 @@ export function AdventureScreen() {
           {!collapsedHowTo ? (
             <HowAdventureWorks onCollapse={() => setCollapsedHowTo(true)} t={t} />
           ) : null}
-          <RecentEvents events={events.slice(0, 5)} />
+          <RecentEvents events={events.slice(0, 5)} t={t} />
         </>
       ) : (
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_26rem]">
@@ -776,27 +802,25 @@ function NodeDetailPanel({
   const visual = getNodeVisual(node);
   const visualState = getNodeVisualState(node);
   return (
-    <section className="app-card rounded-[1.75rem] p-5">
-      <div className="flex items-start gap-4">
+    <section className="app-card rounded-[1.5rem] p-4">
+      <div className="flex items-start gap-3">
         {node.type === "boss" ? (
-          <BossIcon visual={visual} state={visualState} size="lg" />
+          <BossIcon visual={visual} state={visualState} size="md" />
         ) : (
-          <MonsterIcon visual={visual} state={visualState} size="lg" />
+          <MonsterIcon visual={visual} state={visualState} size="md" />
         )}
         <div>
           <p className={cn("text-xs font-black uppercase tracking-[0.14em]", getStatusColor(node))}>
             {translateNodeType(node.type, t)} · {translateStatus(node.status, t)}
           </p>
-          <h2 className="text-app mt-1 text-2xl font-black">
-            {translateNodeTitle(node, settings)}
-          </h2>
-          <p className="text-app-soft mt-2 text-sm leading-6">
+          <h2 className="text-app mt-1 text-xl font-black">{translateNodeTitle(node, settings)}</h2>
+          <p className="text-app-soft mt-1 text-xs leading-5">
             {translateNodeDescription(node, settings)}
           </p>
         </div>
       </div>
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        <section className="app-inset rounded-2xl p-3">
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+        <section className="rounded-2xl border border-[color-mix(in_srgb,var(--success)_32%,var(--border-soft))] bg-[color-mix(in_srgb,var(--success)_8%,var(--surface-inset))] p-3">
           <h3 className="text-app mb-2 text-sm font-black">{t("profile.heroSummary")}</h3>
           <div className="grid gap-2">
             <RecordCard
@@ -809,7 +833,7 @@ function NodeDetailPanel({
             />
           </div>
         </section>
-        <section className="app-inset rounded-2xl p-3">
+        <section className="rounded-2xl border border-[color-mix(in_srgb,var(--danger)_34%,var(--border-soft))] bg-[color-mix(in_srgb,var(--danger)_8%,var(--surface-inset))] p-3">
           <h3 className="text-app mb-2 text-sm font-black">
             {node.type === "chest" ? t("adventure.chest") : t("adventure.enemy")}
           </h3>
@@ -849,11 +873,11 @@ function NodeDetailPanel({
               <p className="text-app-soft mt-1 text-sm">
                 {t("adventure.expectedDamage")}:{" "}
                 <span className="font-black text-[var(--accent)]">{damagePreview.finalDamage}</span>{" "}
-                (base {damagePreview.baseDamage}
+                ({t("battle.baseDamage")} {damagePreview.baseDamage}
                 {damagePreview.skillBonusPercent > 0
                   ? `, ${damagePreview.skillName} +${damagePreview.skillBonusPercent}%`
                   : ""}
-                {damagePreview.weaknessBonus ? ", weakness +15%" : ""})
+                {damagePreview.weaknessBonus ? `, ${t("adventure.weakness")} +15%` : ""})
               </p>
             ) : null}
             <p className="text-app-soft mt-1 text-sm">{t("adventure.enemyCounterattack")}: -5 HP</p>
@@ -966,11 +990,11 @@ function PreFightModal({
         </div>
         {expectedDamage ? (
           <p className="text-app-soft mt-4 text-sm">
-            Base damage {expectedDamage.baseDamage}
+            {t("battle.baseDamage")} {expectedDamage.baseDamage}
             {expectedDamage.skillBonusPercent > 0
               ? ` · ${expectedDamage.skillName} +${expectedDamage.skillBonusPercent}%`
               : ""}
-            {expectedDamage.weaknessBonus ? " · weakness +15%" : ""}.
+            {expectedDamage.weaknessBonus ? ` · ${t("adventure.weakness")} +15%` : ""}.
           </p>
         ) : null}
         <div className="mt-5 grid grid-cols-2 gap-2">
@@ -994,13 +1018,13 @@ function PreFightModal({
   );
 }
 
-function RecentEvents({ events }: { events: AdventureEvent[] }) {
+function RecentEvents({ events, t }: { events: AdventureEvent[]; t: (key: string) => string }) {
   return (
     <section className="app-card rounded-[1.75rem] p-5">
-      <h2 className="text-app text-xl font-black">Recent Events</h2>
+      <h2 className="text-app text-xl font-black">{t("adventure.recentEvents")}</h2>
       <div className="mt-4 space-y-3">
         {events.length === 0 ? (
-          <p className="text-app-soft text-sm">Complete fights to create Adventure events.</p>
+          <p className="text-app-soft text-sm">{t("adventure.noEvents")}</p>
         ) : (
           events.map((event) => (
             <div className="border-l-2 border-[var(--accent)] py-1 pl-3" key={event.id}>
