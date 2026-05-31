@@ -10,6 +10,8 @@ import type {
   AdventureRegion,
   DailyActivitySummary,
   HeroProgress,
+  HeroSkill,
+  HeroSkillSlug,
   Settings,
   UserProgress,
   Workout
@@ -36,6 +38,7 @@ interface ProfileHeroState {
   workouts: Workout[];
   summaries: DailyActivitySummary[];
   achievements: Achievement[];
+  skills: HeroSkill[];
   hero?: HeroProgress | undefined;
   regions: AdventureRegion[];
   activeMob?: AdventureMob | undefined;
@@ -59,8 +62,10 @@ export function ProfileHeroSection({
     workouts: [],
     summaries: [],
     achievements: [],
+    skills: [],
     regions: []
   });
+  const [selectedSkill, setSelectedSkill] = useState<HeroSkill | undefined>();
 
   const load = useCallback(async () => {
     const [progress, workouts, summaries, achievements, adventure] = await Promise.all([
@@ -77,6 +82,7 @@ export function ProfileHeroSection({
       summaries,
       achievements,
       hero: adventure.hero,
+      skills: adventure.skills,
       regions: adventure.regions,
       activeMob
     });
@@ -188,6 +194,21 @@ export function ProfileHeroSection({
             pulse={skillPoints > 0}
             value={String(skillPoints)}
           />
+          {(["power", "endurance", "focus", "agility"] as const).map((slug) => {
+            const skill = state.skills.find((item) => item.slug === slug);
+            return (
+              <HeroChip
+                key={slug}
+                label={translateSkillName(slug, t)}
+                onClick={() => {
+                  if (skill) {
+                    setSelectedSkill(skill);
+                  }
+                }}
+                value={String(skill?.level ?? 1)}
+              />
+            );
+          })}
           {!isCompact ? (
             <>
               <HeroChip label={t("profile.currentStreak")} value={`${streak.current}d`} />
@@ -202,6 +223,9 @@ export function ProfileHeroSection({
           ) : null}
         </div>
       </div>
+      {selectedSkill ? (
+        <HeroSkillModal onClose={() => setSelectedSkill(undefined)} skill={selectedSkill} t={t} />
+      ) : null}
     </section>
   );
 }
@@ -296,4 +320,76 @@ function translateMobTitle(mob: AdventureMob | undefined, settings: Settings | u
     return "-";
   }
   return getAdventureLanguage(settings) === "el" ? mob.titleEl : mob.title;
+}
+
+function HeroSkillModal({
+  skill,
+  onClose,
+  t
+}: {
+  skill: HeroSkill;
+  onClose: () => void;
+  t: (key: string) => string;
+}) {
+  return (
+    <div
+      aria-labelledby="hero-skill-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/58 p-4 backdrop-blur-sm"
+      onClick={(event) => {
+        if (event.currentTarget === event.target) {
+          onClose();
+        }
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          onClose();
+        }
+      }}
+      role="dialog"
+      tabIndex={-1}
+    >
+      <div className="app-card max-w-sm rounded-[2rem] p-5">
+        <p className="text-app-muted text-xs font-black uppercase tracking-[0.14em]">
+          {t("profile.heroStats")}
+        </p>
+        <h2 className="text-app mt-1 text-2xl font-black" id="hero-skill-title">
+          {translateSkillName(skill.slug, t)} {skill.level}
+        </h2>
+        <p className="text-app-soft mt-2 text-sm leading-6">
+          {translateSkillDetail(skill.slug, t)}
+        </p>
+        <button
+          className="focus-ring mt-5 min-h-11 w-full rounded-2xl bg-[var(--accent)] px-4 font-black text-[var(--accent-contrast)]"
+          onClick={onClose}
+          type="button"
+        >
+          {t("common.close")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function translateSkillName(slug: HeroSkillSlug, t: (key: string) => string) {
+  const keys: Record<HeroSkillSlug, string> = {
+    power: "adventure.skillPower",
+    endurance: "adventure.skillEndurance",
+    focus: "adventure.skillFocus",
+    agility: "adventure.skillAgility",
+    luck: "adventure.skillLuck",
+    life: "adventure.skillLife"
+  };
+  return t(keys[slug]);
+}
+
+function translateSkillDetail(slug: HeroSkillSlug, t: (key: string) => string) {
+  const keys: Record<HeroSkillSlug, string> = {
+    power: "profile.skillPowerDetail",
+    endurance: "profile.skillEnduranceDetail",
+    focus: "profile.skillFocusDetail",
+    agility: "profile.skillAgilityDetail",
+    luck: "profile.skillLuckDetail",
+    life: "profile.skillLifeDetail"
+  };
+  return t(keys[slug]);
 }

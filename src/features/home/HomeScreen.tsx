@@ -3,12 +3,19 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ProfileHeroSection } from "../../components/profile/ProfileHeroSection";
 import { listActivities } from "../../db/repositories/activitiesRepo";
 import { listAdventureState } from "../../db/repositories/adventureRepo";
+import {
+  addHealthLog,
+  listHealthLogsForDate,
+  listHealthTasks
+} from "../../db/repositories/healthRepo";
 import { listSummaries } from "../../db/repositories/summariesRepo";
 import type {
   Activity,
   AdventureMob,
   AdventureMobRequirement,
   DailyActivitySummary,
+  HealthLog,
+  HealthTask,
   HeroProgress
 } from "../../db/schema";
 import { useAppStore } from "../../stores/appStore";
@@ -20,6 +27,8 @@ import { getDailyGoalMultiplierLabel } from "../../utils/stats";
 interface HomeState {
   activities: Activity[];
   summaries: DailyActivitySummary[];
+  healthTasks: HealthTask[];
+  healthLogs: HealthLog[];
   hero?: HeroProgress | undefined;
   activeMob?: AdventureMob | undefined;
   activeRequirement?: AdventureMobRequirement | undefined;
@@ -33,13 +42,18 @@ export function HomeScreen() {
   const t = (key: string) => translate(appLanguage, key);
   const [state, setState] = useState<HomeState>({
     activities: [],
-    summaries: []
+    summaries: [],
+    healthTasks: [],
+    healthLogs: []
   });
 
   const load = useCallback(async () => {
-    const [activities, summaries, adventure] = await Promise.all([
+    const today = toLocalDate();
+    const [activities, summaries, healthTasks, healthLogs, adventure] = await Promise.all([
       listActivities(),
       listSummaries(),
+      listHealthTasks(),
+      listHealthLogsForDate(today),
       listAdventureState()
     ]);
     const activeMob = adventure.mobs.find((mob) => mob.id === adventure.activeTarget?.mobId);
@@ -49,6 +63,8 @@ export function HomeScreen() {
     setState({
       activities,
       summaries,
+      healthTasks,
+      healthLogs,
       hero: adventure.hero,
       activeMob,
       activeRequirement
@@ -110,9 +126,55 @@ export function HomeScreen() {
               t={t}
             />
           ))}
+          {state.healthTasks.map((task) => (
+            <HealthGoalCard
+              key={task.id}
+              logs={state.healthLogs.filter((log) => log.taskId === task.id)}
+              onQuickAdd={async () => {
+                await addHealthLog({ taskId: task.id, value: 250 });
+                await load();
+              }}
+              task={task}
+              t={t}
+            />
+          ))}
         </div>
       </section>
     </section>
+  );
+}
+
+function HealthGoalCard({
+  task,
+  logs,
+  onQuickAdd,
+  t
+}: {
+  task: HealthTask;
+  logs: HealthLog[];
+  onQuickAdd: () => void;
+  t: (key: string) => string;
+}) {
+  const current = logs.reduce((total, log) => total + log.value, 0);
+  const complete = current >= task.dailyGoal;
+  return (
+    <article className="rounded-2xl bg-[var(--surface-inset)] p-4">
+      <div className="flex justify-between gap-3">
+        <p className="text-app font-black">{t("health.dailyWater")}</p>
+        <span className="app-pill">{complete ? t("common.completed") : t("common.open")}</span>
+      </div>
+      <p className="text-app mt-2 text-xl font-black">
+        {(current / 1000).toFixed(2)} / {(task.dailyGoal / 1000).toFixed(1)} L
+      </p>
+      <p className="text-app-soft mt-1 text-sm">{t("health.quickAddWater")}: 250 ml</p>
+      <button
+        className="focus-ring mt-3 min-h-10 w-full rounded-xl bg-[var(--accent)] px-3 text-sm font-black text-[var(--accent-contrast)]"
+        onClick={onQuickAdd}
+        type="button"
+      >
+        {t("health.addWater")}
+      </button>
+    </article>
   );
 }
 

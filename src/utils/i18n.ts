@@ -73,6 +73,13 @@ const english: Dictionary = {
   "profile.workoutCount": "Workout count",
   "profile.openAdventure": "Open Adventure",
   "profile.useAvatar": "Use avatar",
+  "profile.heroStats": "Hero stats",
+  "profile.skillPowerDetail": "Strength damage, heavy hits, and direct pressure.",
+  "profile.skillEnduranceDetail": "Damage reduction, stamina, and HP recovery.",
+  "profile.skillFocusDetail": "Timed exercise damage, discipline, and goal reward control.",
+  "profile.skillAgilityDetail": "Movement speed, evasion, reaction time, and cardio damage.",
+  "profile.skillLuckDetail": "Critical hits and improved reward outcomes.",
+  "profile.skillLifeDetail": "Maximum HP and survival margin.",
   "characters.shadowHunter.name": "Shadow Hunter",
   "characters.shadowHunter.role": "Gate Hunter",
   "characters.shadowHunter.description": "A focused fighter shaped by dungeon light and shadow.",
@@ -129,6 +136,10 @@ const english: Dictionary = {
   "settings.switchProfile": "Switch",
   "settings.profileDeleted": "Profile deleted.",
   "settings.profileSaved": "Profile saved.",
+  "settings.newProfileSetup": "New profile setup",
+  "settings.newProfileSetupDescription":
+    "Complete the local setup for this profile before switching into it.",
+  "settings.createProfile": "Create profile",
   "settings.appLanguage": "App Language",
   "settings.adventureLanguage": "Adventure Language",
   "settings.sameAsApp": "Same as App",
@@ -178,8 +189,9 @@ const english: Dictionary = {
   "theme.glassmorphismDescription": "Translucent cards, blur, and thin borders.",
   "theme.cleanMaterial": "Clean Material",
   "theme.cleanMaterialDescription": "Crisp cards, clear borders, and dashboard clarity.",
-  "theme.nativeIos26": "Native iOS 26",
-  "theme.nativeIos26Description": "Liquid surfaces, native-feeling controls, and thin separators.",
+  "theme.nativeIos26": "iOS 26 Liquid Glass",
+  "theme.nativeIos26Description":
+    "Translucent liquid surfaces, thin separators, and native-feeling controls.",
   "theme.sampleCard": "Sample card",
   "theme.sampleCopy": "Readable text and clear controls.",
   "theme.sampleButton": "Button",
@@ -334,6 +346,7 @@ const english: Dictionary = {
   "train.activity": "Activity",
   "train.strength": "Strength",
   "train.cardio": "Cardio",
+  "train.health": "Health",
   "train.createCustomMovement": "Create a custom movement",
   "train.noGoal": "No goal",
   "workout.completeSet": "Complete Set",
@@ -412,11 +425,15 @@ const english: Dictionary = {
   "stats.goalProgress": "Goal progress",
   "stats.recentWorkouts": "Recent Workouts",
   "stats.allActivities": "All Activities",
+  "health.dailyWater": "Daily water",
+  "health.quickAddWater": "Quick add",
+  "health.addWater": "Add water",
   "activities.pullups": "Pull-ups",
   "activities.pushups": "Push-ups",
   "activities.situps": "Sit-ups",
   "activities.squats": "Squats",
-  "activities.treadmill": "Treadmill"
+  "activities.treadmill": "Treadmill",
+  "activities.plank": "Plank"
 };
 
 const greek: Dictionary = {
@@ -490,6 +507,13 @@ const greek: Dictionary = {
   "profile.workoutCount": "Αριθμός προπονήσεων",
   "profile.openAdventure": "Άνοιγμα περιπέτειας",
   "profile.useAvatar": "Χρήση άβαταρ",
+  "profile.heroStats": "Στατιστικά ήρωα",
+  "profile.skillPowerDetail": "Ζημιά δύναμης, βαριά χτυπήματα και άμεση πίεση.",
+  "profile.skillEnduranceDetail": "Μείωση ζημιάς, αντοχή και ανάκτηση HP.",
+  "profile.skillFocusDetail": "Ζημιά χρονικών ασκήσεων, πειθαρχία και έλεγχος ανταμοιβών στόχων.",
+  "profile.skillAgilityDetail": "Ταχύτητα κίνησης, αποφυγή, αντίδραση και cardio ζημιά.",
+  "profile.skillLuckDetail": "Κρίσιμα χτυπήματα και καλύτερες ανταμοιβές.",
+  "profile.skillLifeDetail": "Μέγιστο HP και μεγαλύτερο περιθώριο επιβίωσης.",
   "characters.shadowHunter.name": "Κυνηγός Σκιών",
   "characters.shadowHunter.role": "Κυνηγός Πυλών",
   "characters.shadowHunter.description": "Συγκεντρωμένος μαχητής ανάμεσα σε φως πύλης και σκιά.",
@@ -547,6 +571,10 @@ const greek: Dictionary = {
   "settings.switchProfile": "Αλλαγή",
   "settings.profileDeleted": "Το προφίλ διαγράφηκε.",
   "settings.profileSaved": "Το προφίλ αποθηκεύτηκε.",
+  "settings.newProfileSetup": "Ρύθμιση νέου προφίλ",
+  "settings.newProfileSetupDescription":
+    "Ολοκλήρωσε την τοπική ρύθμιση για αυτό το προφίλ πριν περάσεις σε αυτό.",
+  "settings.createProfile": "Δημιουργία προφίλ",
   "settings.appLanguage": "Γλώσσα εφαρμογής",
   "settings.adventureLanguage": "Γλώσσα περιπέτειας",
   "settings.sameAsApp": "Ίδια με την εφαρμογή",
@@ -596,9 +624,9 @@ const greek: Dictionary = {
   "theme.glassmorphismDescription": "Διάφανες κάρτες, blur και λεπτά περιγράμματα.",
   "theme.cleanMaterial": "Clean Material",
   "theme.cleanMaterialDescription": "Καθαρές κάρτες, σαφή περιγράμματα και ευκρινές dashboard.",
-  "theme.nativeIos26": "Native iOS 26",
+  "theme.nativeIos26": "iOS 26 Liquid Glass",
   "theme.nativeIos26Description":
-    "Υγρές επιφάνειες, controls που θυμίζουν iOS και λεπτοί διαχωρισμοί.",
+    "Διάφανες υγρές επιφάνειες, λεπτοί διαχωρισμοί και controls που θυμίζουν iOS.",
   "theme.sampleCard": "Δείγμα κάρτας",
   "theme.sampleCopy": "Ευανάγνωστο κείμενο και καθαρά controls.",
   "theme.sampleButton": "Κουμπί",
@@ -757,6 +785,7 @@ const greek: Dictionary = {
   "train.activity": "Άσκηση",
   "train.strength": "Δύναμη",
   "train.cardio": "Καρδιοαναπνευστική",
+  "train.health": "Υγεία",
   "train.createCustomMovement": "Δημιούργησε προσαρμοσμένη άσκηση",
   "train.noGoal": "Χωρίς στόχο",
   "workout.completeSet": "Ολοκλήρωση σετ",
@@ -835,11 +864,15 @@ const greek: Dictionary = {
   "stats.goalProgress": "Πρόοδος στόχου",
   "stats.recentWorkouts": "Πρόσφατες προπονήσεις",
   "stats.allActivities": "Όλες οι ασκήσεις",
+  "health.dailyWater": "Ημερήσιο νερό",
+  "health.quickAddWater": "Γρήγορη προσθήκη",
+  "health.addWater": "Προσθήκη νερού",
   "activities.pullups": "Έλξεις",
   "activities.pushups": "Κάμψεις",
   "activities.situps": "Κοιλιακοί",
   "activities.squats": "Καθίσματα",
-  "activities.treadmill": "Διάδρομος"
+  "activities.treadmill": "Διάδρομος",
+  "activities.plank": "Σανίδα"
 };
 
 const dictionaries: Record<AppLanguage, Dictionary> = {

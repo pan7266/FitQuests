@@ -3,6 +3,8 @@ import { getLevelFromXP } from "../utils/levels";
 import type { PenRepsDatabase } from "./db";
 import { db } from "./db";
 import { seedAdventureData } from "./repositories/adventureRepo";
+import { seedEquipmentInventory } from "./repositories/equipmentRepo";
+import { seedHealthTasks } from "./repositories/healthRepo";
 import { backfillProfileIdForLegacyData, ensureActiveProfile } from "./repositories/profilesRepo";
 import type { Activity, Settings, UserProgress } from "./schema";
 
@@ -169,6 +171,7 @@ export const seedPredefinedActivities = async (database: PenRepsDatabase = db) =
 export const seedAppData = async (database: PenRepsDatabase = db) => {
   const now = new Date().toISOString();
   await seedPredefinedActivities(database);
+  await seedHealthTasks(database);
 
   const settings = await database.settings.get("settings");
   if (!settings) {
@@ -182,5 +185,6 @@ export const seedAppData = async (database: PenRepsDatabase = db) => {
 
   const activeProfile = await ensureActiveProfile(database);
   await backfillProfileIdForLegacyData(activeProfile.id, database);
+  await seedEquipmentInventory(database);
   await seedAdventureData(database);
 };

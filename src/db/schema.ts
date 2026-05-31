@@ -1,5 +1,5 @@
-export type ActivityUnit = "reps" | "seconds" | "distance" | "weight";
-export type ActivityType = "strength" | "timed" | "cardio";
+export type ActivityUnit = "reps" | "seconds" | "distance" | "weight" | "milliliters";
+export type ActivityType = "strength" | "timed" | "cardio" | "health";
 export type WorkoutMode = "live" | "setEntry" | "timed" | "cardio";
 export type UiStyle = "neomorphism" | "glassmorphism" | "material" | "ios";
 export type ColorMode = "dark" | "light";
@@ -57,6 +57,48 @@ export interface AppMeta {
   id: "app";
   activeProfileId: string;
   schemaVersion: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type HealthTaskUnit = "milliliters";
+export type HealthTaskCadence = "daily";
+
+export interface HealthTask {
+  id: string;
+  slug: string;
+  name: string;
+  unit: HealthTaskUnit;
+  cadence: HealthTaskCadence;
+  dailyGoal: number;
+  icon: string;
+  color: string;
+  isDefault: boolean;
+  isArchived: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HealthLog {
+  id: string;
+  profileId: string;
+  taskId: string;
+  localDate: string;
+  value: number;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type EquipmentCategory = "bodyweight" | "cardio" | "weights" | "mobility" | "accessory";
+
+export interface UserEquipmentInventoryItem {
+  id: string;
+  profileId: string;
+  equipmentKey: string;
+  name: string;
+  category: EquipmentCategory;
+  isOwned: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -441,6 +483,9 @@ export interface ExportPayload {
   profiles: LocalProfile[];
   profileHistory: ProfileHistoryEntry[];
   appMeta: AppMeta[];
+  healthTasks: HealthTask[];
+  healthLogs: HealthLog[];
+  userEquipmentInventory: UserEquipmentInventoryItem[];
   activities: Activity[];
   trainLogs: TrainLog[];
   adventureProgress: AdventureProgress[];

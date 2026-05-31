@@ -827,6 +827,7 @@ function NodeDetailPanel({
               label={t("battle.heroHp")}
               value={`${hero?.currentHP ?? 100}/${hero?.maxHP ?? 100}`}
             />
+            <RecordCard label={t("profile.level")} value={String(getHeroLevel(hero))} />
             <RecordCard
               label={t("profile.skillPoints")}
               value={String(hero?.unspentSkillPoints ?? 0)}
@@ -979,6 +980,7 @@ function PreFightModal({
             label={t("battle.heroHp")}
             value={`${hero?.currentHP ?? 100}/${hero?.maxHP ?? 100}`}
           />
+          <FlatMetric label={t("profile.level")} value={String(getHeroLevel(hero))} />
           <FlatMetric label={t("battle.exercise")} value={activity?.name ?? t("common.workout")} />
           <FlatMetric label={t("battle.requiredHit")} value={node.requirementLabel} />
           <FlatMetric
@@ -1538,4 +1540,11 @@ function getSkillNameForActivity(activityType: ActivityType) {
 
 function getSkillLevel(skills: HeroSkill[], slug: HeroSkillSlug) {
   return skills.find((skill) => skill.slug === slug)?.level ?? 1;
+}
+
+function getHeroLevel(hero: HeroProgress | undefined) {
+  if (!hero) {
+    return 1;
+  }
+  return Math.max(1, Math.floor((hero.maxHP - 100) / 10) + 1);
 }

@@ -110,8 +110,6 @@ export function MonsterIcon({
   const isLocked = state === "locked";
   const isDefeated = state === "defeated" || state === "opened" || state === "completed";
   const color = isLocked ? "var(--text-muted)" : visual.themeColor;
-  const badge = getStateBadge(state);
-
   return (
     <span
       className={cn(
@@ -143,11 +141,6 @@ export function MonsterIcon({
         <circle cx="60" cy="58" fill={`url(#${gradientId})`} opacity="0.34" r="48" />
         {visual.type === "chest" ? renderChest(color) : renderMonsterShape(visual, color, glowId)}
       </svg>
-      {badge ? (
-        <span className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--surface)] text-[0.65rem] shadow-sm">
-          {badge}
-        </span>
-      ) : null}
     </span>
   );
 }
@@ -398,19 +391,6 @@ const renderChest = (color: string) => (
     <rect fill="#F59E0B" height="15" rx="3" width="14" x="53" y="65" />
   </g>
 );
-
-const getStateBadge = (state: VisualState) => {
-  if (state === "locked") {
-    return <Lock aria-hidden="true" size={12} />;
-  }
-  if (state === "defeated" || state === "opened" || state === "completed") {
-    return <Check aria-hidden="true" size={12} className="text-[var(--success)]" />;
-  }
-  if (state === "active" || state === "selected") {
-    return <Swords aria-hidden="true" size={12} className="text-[var(--accent)]" />;
-  }
-  return null;
-};
 
 const getRealmStateIcon = (state: VisualState) => {
   if (state === "locked") {

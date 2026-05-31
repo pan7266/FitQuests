@@ -28,10 +28,14 @@ import type {
   Activity,
   ActivityUnit,
   AdventureRegion,
+  AppLanguage,
+  ColorMode,
   DailyActivitySummary,
   HeroProgress,
   LocalProfile,
   Settings,
+  UiDensity,
+  UiStyle,
   UserProgress,
   Workout
 } from "../../db/schema";
@@ -70,6 +74,15 @@ export function SettingsScreen() {
   const [newUnit, setNewUnit] = useState<ActivityUnit>("reps");
   const [status, setStatus] = useState("");
   const [profiles, setProfiles] = useState<LocalProfile[]>([]);
+  const [newProfileWizardOpen, setNewProfileWizardOpen] = useState(false);
+  const [newProfileDraft, setNewProfileDraft] = useState({
+    displayName: "",
+    appLanguage: "en" as AppLanguage,
+    uiStyle: "ios" as UiStyle,
+    colorMode: "light" as ColorMode,
+    uiDensity: "cozy" as UiDensity,
+    accentColor: DEFAULT_ACCENT
+  });
   const [profileEditing, setProfileEditing] = useState(false);
   const [profileDraft, setProfileDraft] = useState<ProfileDraft>({
     displayName: "",
@@ -329,11 +342,7 @@ export function SettingsScreen() {
                 <h3 className="text-app text-sm font-black">{t("settings.localProfiles")}</h3>
                 <button
                   className="focus-ring rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-black text-[var(--accent-contrast)]"
-                  onClick={async () => {
-                    const profile = await createProfile({ name: t("common.player") });
-                    await switchActiveProfile(profile.id);
-                    await refreshProfileScopedData();
-                  }}
+                  onClick={() => setNewProfileWizardOpen(true)}
                   type="button"
                 >
                   {t("settings.addProfile")}
@@ -388,7 +397,7 @@ export function SettingsScreen() {
               <legend className="text-app-soft mb-2 text-sm font-bold">
                 {t("profile.avatar")}
               </legend>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-5 gap-2 sm:grid-cols-6">
                 {AVATAR_OPTIONS.map((avatar) => {
                   const selected = (settings?.avatarId ?? "default") === avatar.id;
                   const characterName = t(avatar.nameKey);
@@ -396,7 +405,7 @@ export function SettingsScreen() {
                     <button
                       aria-label={`${t("profile.useAvatar")} ${characterName}`}
                       aria-pressed={selected}
-                      className={`focus-ring flex aspect-square items-center justify-center rounded-2xl p-1 transition ${
+                      className={`focus-ring flex h-12 w-full items-center justify-center rounded-xl p-0.5 transition sm:h-14 ${
                         selected ? "accent-selected" : "app-inset"
                       }`}
                       key={avatar.id}
@@ -536,7 +545,7 @@ export function SettingsScreen() {
                 {t("settings.unit")}
               </legend>
               <div className="grid grid-cols-3 gap-2">
-                {(["reps", "seconds", "distance", "weight"] as const).map((unit) => (
+                {(["reps", "seconds", "distance", "weight", "milliliters"] as const).map((unit) => (
                   <button
                     aria-pressed={newUnit === unit}
                     className={`focus-ring min-h-12 rounded-2xl px-4 font-bold transition ${
@@ -625,6 +634,120 @@ export function SettingsScreen() {
           </section>
         </div>
       </div>
+      {newProfileWizardOpen ? (
+        <div
+          aria-labelledby="new-profile-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/58 p-4 backdrop-blur-sm"
+          role="dialog"
+        >
+          <div className="app-card w-full max-w-lg rounded-[2rem] p-5">
+            <h2 className="text-app text-2xl font-black" id="new-profile-title">
+              {t("settings.newProfileSetup")}
+            </h2>
+            <p className="text-app-soft mt-2 text-sm leading-6">
+              {t("settings.newProfileSetupDescription")}
+            </p>
+            <div className="mt-5 space-y-4">
+              <ProfileTextField
+                label={t("profile.displayName")}
+                onChange={(value) =>
+                  setNewProfileDraft((current) => ({ ...current, displayName: value }))
+                }
+                value={newProfileDraft.displayName}
+              />
+              <SegmentedSetting
+                label={t("settings.appLanguage")}
+                onChange={(value) =>
+                  setNewProfileDraft((current) => ({
+                    ...current,
+                    appLanguage: value as AppLanguage
+                  }))
+                }
+                options={[
+                  { label: t("settings.english"), value: "en" },
+                  { label: t("settings.greek"), value: "el" }
+                ]}
+                value={newProfileDraft.appLanguage}
+              />
+              <ThemeSelector
+                colorMode={newProfileDraft.colorMode}
+                onChange={(choice) =>
+                  setNewProfileDraft((current) => ({
+                    ...current,
+                    uiStyle: choice.uiStyle,
+                    colorMode: choice.colorMode
+                  }))
+                }
+                uiStyle={newProfileDraft.uiStyle}
+              />
+              <SegmentedSetting
+                label={t("theme.mode")}
+                onChange={(value) =>
+                  setNewProfileDraft((current) => ({
+                    ...current,
+                    colorMode: value as ColorMode
+                  }))
+                }
+                options={[
+                  { label: t("theme.light"), value: "light" },
+                  { label: t("theme.dark"), value: "dark" }
+                ]}
+                value={newProfileDraft.colorMode}
+              />
+              <SegmentedSetting
+                label={t("settings.uiDensity")}
+                onChange={(value) =>
+                  setNewProfileDraft((current) => ({
+                    ...current,
+                    uiDensity: value as UiDensity
+                  }))
+                }
+                options={[
+                  { label: t("settings.cozy"), value: "cozy" },
+                  { label: t("settings.compact"), value: "compact" }
+                ]}
+                value={newProfileDraft.uiDensity}
+              />
+              <AccentColorControl
+                hueLabel={t("settings.hueSlider")}
+                onChange={(accentColor) =>
+                  setNewProfileDraft((current) => ({ ...current, accentColor }))
+                }
+                resetLabel={t("settings.resetDefault")}
+                title={t("settings.themeAccent")}
+                value={newProfileDraft.accentColor}
+              />
+            </div>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <NeomorphicButton onClick={() => setNewProfileWizardOpen(false)} variant="secondary">
+                {t("common.cancel")}
+              </NeomorphicButton>
+              <NeomorphicButton
+                onClick={async () => {
+                  const profile = await createProfile({
+                    name: newProfileDraft.displayName.trim() || t("common.player")
+                  });
+                  await switchActiveProfile(profile.id);
+                  await updateSettings({
+                    displayName: newProfileDraft.displayName.trim() || t("common.player"),
+                    appLanguage: newProfileDraft.appLanguage,
+                    uiStyle: newProfileDraft.uiStyle,
+                    colorMode: newProfileDraft.colorMode,
+                    uiDensity: newProfileDraft.uiDensity,
+                    accentColor: newProfileDraft.accentColor,
+                    onboardingCompleted: true
+                  });
+                  setNewProfileWizardOpen(false);
+                  await refreshProfileScopedData();
+                }}
+                variant="primary"
+              >
+                {t("settings.createProfile")}
+              </NeomorphicButton>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

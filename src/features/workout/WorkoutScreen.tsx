@@ -520,8 +520,14 @@ export function WorkoutScreen() {
               activities={activities}
               summaries={summaries}
               onAddActivity={() => setActiveTab("settings")}
-              onChange={(activityId) => {
-                setSelectedActivityId(activityId);
+              onChange={() => undefined}
+              onStartActivity={async (activityId) => {
+                const activity = activities.find((item) => item.id === activityId);
+                if (!activity) {
+                  return;
+                }
+                await unlockAudio();
+                await startWorkout(activity, getModeForActivity(activity));
               }}
               value={selectedActivityId}
             />
@@ -539,24 +545,6 @@ export function WorkoutScreen() {
           skills={heroSkills}
           t={t}
         />
-        {selectedActivityId ? (
-          <div className="sticky bottom-[calc(var(--safe-bottom)+5.5rem)] z-20 mx-auto max-w-md px-1">
-            <button
-              className="focus-ring min-h-14 w-full rounded-2xl bg-[var(--accent)] px-5 text-base font-black text-[var(--accent-contrast)] shadow-[var(--accent-glow)]"
-              onClick={async () => {
-                const activity = activities.find((item) => item.id === selectedActivityId);
-                if (!activity) {
-                  return;
-                }
-                await unlockAudio();
-                await startWorkout(activity, getModeForActivity(activity));
-              }}
-              type="button"
-            >
-              {t("common.startWorkout")}
-            </button>
-          </div>
-        ) : null}
       </section>
     );
   }
@@ -1051,10 +1039,10 @@ function TrainSkillsPanel({
   }
 
   return (
-    <section className="app-card rounded-[1.5rem] p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <section className="app-card rounded-[1.5rem] p-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-app text-lg font-black">{t("adventure.upgradeHero")}</h2>
+          <h2 className="text-app text-base font-black">{t("adventure.upgradeHero")}</h2>
           <p className="text-app-soft mt-0.5 text-xs">{t("adventure.upgradeHeroDescription")}</p>
         </div>
         <span className="rounded-full bg-[var(--accent)] px-2.5 py-1 text-xs font-black text-[var(--accent-contrast)]">
@@ -1063,31 +1051,43 @@ function TrainSkillsPanel({
       </div>
       <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
         {skills.map((skill) => (
-          <article className="app-inset rounded-2xl p-3" key={skill.id}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-app font-black">{translateSkillName(skill.slug, t)}</h3>
-                <p className="text-app-soft mt-1 text-xs leading-5">
-                  {translateSkillDescription(skill.slug, t)}
-                </p>
+          <article
+            className="app-inset grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-2xl p-2.5"
+            key={skill.id}
+          >
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="text-app truncate text-sm font-black">
+                  {translateSkillName(skill.slug, t)}
+                </h3>
+                <span className="app-pill shrink-0">{skillDamageBonus(skill.level)}</span>
               </div>
-              <span className="app-pill">
+              <p className="text-app-soft mt-1 line-clamp-2 text-xs leading-5">
+                {translateSkillDescription(skill.slug, t)}
+              </p>
+            </div>
+            <div className="w-24">
+              <span className="app-pill mb-2 block text-center">
                 {t("profile.level")} {skill.level}
               </span>
+              <button
+                className="focus-ring min-h-9 w-full rounded-xl bg-[var(--accent)] px-3 text-xs font-black text-[var(--accent-contrast)] disabled:bg-[var(--toggle-off)] disabled:text-[var(--text-muted)]"
+                disabled={points <= 0}
+                onClick={() => void onUpgrade(skill.slug)}
+                type="button"
+              >
+                {points > 0 ? t("adventure.upgrade") : t("adventure.noSkillPoints")}
+              </button>
             </div>
-            <button
-              className="focus-ring mt-3 min-h-9 w-full rounded-xl bg-[var(--accent)] px-3 text-xs font-black text-[var(--accent-contrast)] disabled:bg-[var(--toggle-off)] disabled:text-[var(--text-muted)]"
-              disabled={points <= 0}
-              onClick={() => void onUpgrade(skill.slug)}
-              type="button"
-            >
-              {points > 0 ? t("adventure.upgrade") : t("adventure.noSkillPoints")}
-            </button>
           </article>
         ))}
       </div>
     </section>
   );
+}
+
+function skillDamageBonus(level: number) {
+  return `+${Math.max(0, level - 1) * 2}%`;
 }
 
 function translateSkillName(slug: HeroSkill["slug"], t: (key: string) => string) {

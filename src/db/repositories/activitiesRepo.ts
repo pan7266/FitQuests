@@ -104,10 +104,22 @@ export const createCustomActivity = async (
     name: input.name.trim() || "Custom Activity",
     unit: input.unit,
     activityType:
-      input.unit === "seconds" ? "timed" : input.unit === "distance" ? "cardio" : "strength",
+      input.unit === "seconds"
+        ? "timed"
+        : input.unit === "distance"
+          ? "cardio"
+          : input.unit === "milliliters"
+            ? "health"
+            : "strength",
     icon:
       input.icon ??
-      (input.unit === "seconds" ? "Timer" : input.unit === "weight" ? "Dumbbell" : "Plus"),
+      (input.unit === "seconds"
+        ? "Timer"
+        : input.unit === "weight"
+          ? "Dumbbell"
+          : input.unit === "milliliters"
+            ? "Droplets"
+            : "Plus"),
     color: input.color ?? DEFAULT_ACCENT,
     defaultRestSeconds: Math.max(1, Math.floor(input.defaultRestSeconds ?? 45)),
     autoRestEnabled: input.autoRestEnabled ?? false,

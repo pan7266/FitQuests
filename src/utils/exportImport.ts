@@ -19,11 +19,14 @@ import type {
   AppMeta,
   DailyActivitySummary,
   ExportPayload,
+  HealthLog,
+  HealthTask,
   HeroProgress,
   LocalProfile,
   ProfileHistoryEntry,
   Settings,
   TrainLog,
+  UserEquipmentInventoryItem,
   UserProgress,
   Workout,
   WorkoutCardioMetric,
@@ -111,10 +114,12 @@ const isActivity = (value: unknown): value is Activity => {
     (value.unit === "reps" ||
       value.unit === "seconds" ||
       value.unit === "distance" ||
-      value.unit === "weight") &&
+      value.unit === "weight" ||
+      value.unit === "milliliters") &&
     (value.activityType === "strength" ||
       value.activityType === "timed" ||
-      value.activityType === "cardio") &&
+      value.activityType === "cardio" ||
+      value.activityType === "health") &&
     isString(value.icon) &&
     isString(value.color) &&
     isNumber(value.defaultRestSeconds) &&
@@ -125,6 +130,62 @@ const isActivity = (value: unknown): value is Activity => {
     isNumber(value.yearlyGoal) &&
     isBoolean(value.isDefault) &&
     isBoolean(value.isArchived) &&
+    isString(value.createdAt) &&
+    isString(value.updatedAt)
+  );
+};
+
+const isHealthTask = (value: unknown): value is HealthTask => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return (
+    isString(value.id) &&
+    isString(value.slug) &&
+    isString(value.name) &&
+    value.unit === "milliliters" &&
+    value.cadence === "daily" &&
+    isNumber(value.dailyGoal) &&
+    isString(value.icon) &&
+    isString(value.color) &&
+    isBoolean(value.isDefault) &&
+    isBoolean(value.isArchived) &&
+    isString(value.createdAt) &&
+    isString(value.updatedAt)
+  );
+};
+
+const isHealthLog = (value: unknown): value is HealthLog => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return (
+    isString(value.id) &&
+    isString(value.profileId) &&
+    isString(value.taskId) &&
+    isString(value.localDate) &&
+    isNumber(value.value) &&
+    (value.notes === undefined || isString(value.notes)) &&
+    isString(value.createdAt) &&
+    isString(value.updatedAt)
+  );
+};
+
+const isEquipmentItem = (value: unknown): value is UserEquipmentInventoryItem => {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return (
+    isString(value.id) &&
+    isString(value.profileId) &&
+    isString(value.equipmentKey) &&
+    isString(value.name) &&
+    (value.category === "bodyweight" ||
+      value.category === "cardio" ||
+      value.category === "weights" ||
+      value.category === "mobility" ||
+      value.category === "accessory") &&
+    isBoolean(value.isOwned) &&
     isString(value.createdAt) &&
     isString(value.updatedAt)
   );
@@ -399,7 +460,8 @@ const isAdventureMobRequirement = (value: unknown): value is AdventureMobRequire
     (value.activityType === undefined ||
       value.activityType === "strength" ||
       value.activityType === "timed" ||
-      value.activityType === "cardio") &&
+      value.activityType === "cardio" ||
+      value.activityType === "health") &&
     (value.metric === "reps" ||
       value.metric === "seconds" ||
       value.metric === "distanceMeters" ||
@@ -560,7 +622,8 @@ const isTrainLog = (value: unknown): value is TrainLog => {
     (value.trackingType === "reps" ||
       value.trackingType === "seconds" ||
       value.trackingType === "distance" ||
-      value.trackingType === "weight") &&
+      value.trackingType === "weight" ||
+      value.trackingType === "milliliters") &&
     (value.reps === undefined || isNumber(value.reps)) &&
     (value.durationSeconds === undefined || isNumber(value.durationSeconds)) &&
     (value.distanceMeters === undefined || isNumber(value.distanceMeters)) &&
@@ -603,6 +666,9 @@ export const exportAppData = async (database: PenRepsDatabase = db): Promise<Exp
   profiles: await database.profiles.toArray(),
   profileHistory: await database.profileHistory.toArray(),
   appMeta: await database.appMeta.toArray(),
+  healthTasks: await database.healthTasks.toArray(),
+  healthLogs: await database.healthLogs.toArray(),
+  userEquipmentInventory: await database.userEquipmentInventory.toArray(),
   activities: await database.activities.toArray(),
   trainLogs: await database.trainLogs.toArray(),
   adventureProgress: await database.adventureProgress.toArray(),
@@ -644,6 +710,13 @@ export const validateImportPayload = (value: unknown): value is ExportPayload =>
       (Array.isArray(value.profileHistory) && value.profileHistory.every(isProfileHistoryEntry))) &&
     (value.appMeta === undefined ||
       (Array.isArray(value.appMeta) && value.appMeta.every(isAppMeta))) &&
+    (value.healthTasks === undefined ||
+      (Array.isArray(value.healthTasks) && value.healthTasks.every(isHealthTask))) &&
+    (value.healthLogs === undefined ||
+      (Array.isArray(value.healthLogs) && value.healthLogs.every(isHealthLog))) &&
+    (value.userEquipmentInventory === undefined ||
+      (Array.isArray(value.userEquipmentInventory) &&
+        value.userEquipmentInventory.every(isEquipmentItem))) &&
     Array.isArray(value.activities) &&
     value.activities.every(isActivity) &&
     (value.trainLogs === undefined ||
@@ -712,6 +785,9 @@ export const replaceAllData = async (payload: ExportPayload, database: PenRepsDa
       database.profiles,
       database.profileHistory,
       database.appMeta,
+      database.healthTasks,
+      database.healthLogs,
+      database.userEquipmentInventory,
       database.activities,
       database.trainLogs,
       database.adventureProgress,
@@ -739,6 +815,9 @@ export const replaceAllData = async (payload: ExportPayload, database: PenRepsDa
         database.profiles.clear(),
         database.profileHistory.clear(),
         database.appMeta.clear(),
+        database.healthTasks.clear(),
+        database.healthLogs.clear(),
+        database.userEquipmentInventory.clear(),
         database.activities.clear(),
         database.trainLogs.clear(),
         database.adventureProgress.clear(),
@@ -764,6 +843,9 @@ export const replaceAllData = async (payload: ExportPayload, database: PenRepsDa
       await database.profiles.bulkPut(payload.profiles ?? []);
       await database.profileHistory.bulkPut(payload.profileHistory ?? []);
       await database.appMeta.bulkPut(payload.appMeta ?? []);
+      await database.healthTasks.bulkPut(payload.healthTasks ?? []);
+      await database.healthLogs.bulkPut(payload.healthLogs ?? []);
+      await database.userEquipmentInventory.bulkPut(payload.userEquipmentInventory ?? []);
       await database.activities.bulkPut(payload.activities);
       await database.trainLogs.bulkPut(payload.trainLogs ?? []);
       await database.adventureProgress.bulkPut(payload.adventureProgress ?? []);
@@ -801,6 +883,9 @@ export const resetAllData = async (database: PenRepsDatabase = db) => {
       database.profiles,
       database.profileHistory,
       database.appMeta,
+      database.healthTasks,
+      database.healthLogs,
+      database.userEquipmentInventory,
       database.activities,
       database.trainLogs,
       database.adventureProgress,
@@ -828,6 +913,9 @@ export const resetAllData = async (database: PenRepsDatabase = db) => {
         database.profiles.clear(),
         database.profileHistory.clear(),
         database.appMeta.clear(),
+        database.healthTasks.clear(),
+        database.healthLogs.clear(),
+        database.userEquipmentInventory.clear(),
         database.activities.clear(),
         database.trainLogs.clear(),
         database.adventureProgress.clear(),

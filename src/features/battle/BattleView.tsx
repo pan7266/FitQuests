@@ -61,7 +61,6 @@ export function BattleView({ enemyId }: { enemyId: string }) {
   const [activities, setActivities] = useState<ActivityModel[]>([]);
   const [enemyRecord, setEnemyRecord] = useState<EnemyRecord | undefined>();
   const [hit, setHit] = useState<AdventureHitRequirement | undefined>();
-  const [inputOpen, setInputOpen] = useState(false);
   const [repValue, setRepValue] = useState(0);
   const [distanceKm, setDistanceKm] = useState("");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -179,7 +178,6 @@ export function BattleView({ enemyId }: { enemyId: string }) {
     setDistanceKm("");
     setElapsedSeconds(0);
     setTimerStartedAt(undefined);
-    setInputOpen(false);
   };
 
   const saveWorkoutForHit = async () => {
@@ -296,6 +294,7 @@ export function BattleView({ enemyId }: { enemyId: string }) {
           primaryLabel: ta("adventure.backToRealm"),
           onPrimary: () => {
             setModal(undefined);
+            window.dispatchEvent(new Event("fit-quest-adventure-updated"));
             setActiveBattle(undefined);
           }
         });
@@ -466,39 +465,29 @@ export function BattleView({ enemyId }: { enemyId: string }) {
                 </div>
               </div>
 
-              {!inputOpen ? (
-                <button
-                  className="focus-ring mt-4 min-h-12 w-full rounded-2xl bg-[var(--accent)] px-4 font-black text-[var(--accent-contrast)] shadow-[var(--accent-glow)]"
-                  onClick={() => setInputOpen(true)}
-                  type="button"
-                >
-                  {ta("battle.doHit")}
-                </button>
-              ) : (
-                <BattleInput
-                  distanceKm={distanceKm}
-                  displayLabel={translateHitLabel(hit, settings)}
-                  elapsedSeconds={elapsedSeconds}
-                  hit={hit}
-                  labels={{
-                    distanceCompleted: t("workout.distanceKm"),
-                    pause: t("common.pause"),
-                    repsCompleted: t("workout.completedReps"),
-                    start: t("common.start"),
-                    undo: t("common.undo"),
-                    attack: ta("battle.attack"),
-                    hitProgress: ta("battle.hitProgress")
-                  }}
-                  onAttack={() => void attack()}
-                  onDistanceChange={setDistanceKm}
-                  onRepChange={setRepValue}
-                  onStartTimer={() => setTimerStartedAt(Date.now() - elapsedSeconds * 1000)}
-                  onStopTimer={() => setTimerStartedAt(undefined)}
-                  repValue={repValue}
-                  timerRunning={timerStartedAt !== undefined}
-                  valid={canAttack}
-                />
-              )}
+              <BattleInput
+                distanceKm={distanceKm}
+                displayLabel={translateHitLabel(hit, settings)}
+                elapsedSeconds={elapsedSeconds}
+                hit={hit}
+                labels={{
+                  distanceCompleted: t("workout.distanceKm"),
+                  pause: t("common.pause"),
+                  repsCompleted: t("workout.completedReps"),
+                  start: t("common.start"),
+                  undo: t("common.undo"),
+                  attack: ta("battle.attack"),
+                  hitProgress: ta("battle.hitProgress")
+                }}
+                onAttack={() => void attack()}
+                onDistanceChange={setDistanceKm}
+                onRepChange={setRepValue}
+                onStartTimer={() => setTimerStartedAt(Date.now() - elapsedSeconds * 1000)}
+                onStopTimer={() => setTimerStartedAt(undefined)}
+                repValue={repValue}
+                timerRunning={timerStartedAt !== undefined}
+                valid={canAttack}
+              />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -590,9 +579,15 @@ function BattleInput({
     <div className="mt-4 space-y-4">
       <button
         aria-label={labels.hitProgress}
-        className="focus-ring mx-auto grid h-36 w-36 place-items-center rounded-full bg-[conic-gradient(var(--accent)_var(--progress),var(--surface)_0)] p-2 transition active:scale-95 disabled:opacity-70"
-        disabled={hit.metric !== "reps"}
+        className={cn(
+          "focus-ring mx-auto grid h-36 w-36 place-items-center rounded-full bg-[conic-gradient(var(--accent)_var(--progress),var(--surface)_0)] p-2 transition active:scale-95",
+          valid && "shadow-[0_0_36px_color-mix(in_srgb,var(--accent)_46%,transparent)]"
+        )}
         onClick={() => {
+          if (valid) {
+            onAttack();
+            return;
+          }
           if (hit.metric === "reps") {
             onRepChange(repValue + 1);
           }
@@ -610,6 +605,9 @@ function BattleInput({
                   : current}
             </span>
             <span className="text-app-muted text-xs font-bold">{displayLabel}</span>
+            <span className="mt-1 block text-[0.65rem] font-black text-[var(--accent)]">
+              {valid ? labels.attack : labels.hitProgress}
+            </span>
           </span>
         </div>
       </button>
@@ -675,14 +673,9 @@ function BattleInput({
         </label>
       ) : null}
 
-      <button
-        className="focus-ring mx-auto block min-h-10 w-full max-w-xs rounded-xl bg-[var(--accent)] px-4 text-sm font-black text-[var(--accent-contrast)] shadow-[var(--accent-glow)] disabled:bg-[var(--toggle-off)] disabled:text-[var(--text-muted)] disabled:shadow-none"
-        disabled={!valid}
-        onClick={onAttack}
-        type="button"
-      >
-        {labels.attack}
-      </button>
+      <p className="text-app-muted text-center text-xs font-bold">
+        {valid ? labels.attack : labels.hitProgress}
+      </p>
     </div>
   );
 }

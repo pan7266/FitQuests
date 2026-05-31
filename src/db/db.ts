@@ -14,12 +14,15 @@ import type {
   AdventureRegion,
   AppMeta,
   DailyActivitySummary,
+  HealthLog,
+  HealthTask,
   HeroProgress,
   HeroSkill,
   LocalProfile,
   ProfileHistoryEntry,
   Settings,
   TrainLog,
+  UserEquipmentInventoryItem,
   UserProgress,
   Workout,
   WorkoutCardioMetric,
@@ -30,6 +33,9 @@ export class PenRepsDatabase extends Dexie {
   profiles!: Table<LocalProfile, string>;
   profileHistory!: Table<ProfileHistoryEntry, string>;
   appMeta!: Table<AppMeta, string>;
+  healthTasks!: Table<HealthTask, string>;
+  healthLogs!: Table<HealthLog, string>;
+  userEquipmentInventory!: Table<UserEquipmentInventoryItem, string>;
   activities!: Table<Activity, string>;
   trainLogs!: Table<TrainLog, string>;
   adventureProgress!: Table<AdventureProgress, string>;
@@ -188,6 +194,40 @@ export class PenRepsDatabase extends Dexie {
       profiles: "id, active, lastUsedAt, updatedAt",
       profileHistory: "id, profileId, field, createdAt",
       appMeta: "id, activeProfileId, updatedAt",
+      activities: "id, &slug, unit, activityType, isDefault, isArchived, updatedAt",
+      trainLogs: "id, profileId, workoutId, exerciseId, trackingType, createdAt, updatedAt",
+      adventureProgress: "id, profileId, selectedRealmId, updatedAt",
+      workouts:
+        "id, profileId, activityId, localDate, startedAt, endedAt, mode, [profileId+localDate], [activityId+localDate]",
+      workoutSets:
+        "id, profileId, workoutId, activityId, localDate, startedAt, endedAt, [workoutId+setIndex], [activityId+localDate]",
+      workoutCardioMetrics:
+        "id, profileId, workoutId, activityId, localDate, [activityId+localDate]",
+      dailySummaries:
+        "id, profileId, localDate, activityId, [profileId+localDate], [activityId+localDate]",
+      settings: "id, profileId",
+      achievements: "id, slug, activityId, unlockedAt",
+      userProgress: "id",
+      heroProgress: "id, profileId",
+      heroSkills: "id, slug",
+      adventureRegions: "id, status, isUnlocked, bossId",
+      adventureBosses: "id, slug, regionId, status",
+      adventureChests: "id, slug, realmId, status, updatedAt",
+      adventureHitRequirements: "id, enemyId, activityId, activitySlug, activityType, metric",
+      adventureMobs: "id, slug, realmId, enemyType, status, updatedAt",
+      adventureMobRequirements: "id, mobId, activityId, activitySlug, activityType, metric",
+      adventureEvents: "id, profileId, type, localDate, createdAt",
+      activeAdventureTarget: "id, realmId, mobId, bossId, updatedAt",
+      activeWorkoutDraft: "id, profileId, activityId, updatedAt"
+    });
+
+    this.version(8).stores({
+      profiles: "id, active, lastUsedAt, updatedAt",
+      profileHistory: "id, profileId, field, createdAt",
+      appMeta: "id, activeProfileId, updatedAt",
+      healthTasks: "id, &slug, unit, cadence, isDefault, isArchived, updatedAt",
+      healthLogs: "id, profileId, taskId, localDate, createdAt, [profileId+localDate]",
+      userEquipmentInventory: "id, profileId, equipmentKey, category, isOwned, updatedAt",
       activities: "id, &slug, unit, activityType, isDefault, isArchived, updatedAt",
       trainLogs: "id, profileId, workoutId, exerciseId, trackingType, createdAt, updatedAt",
       adventureProgress: "id, profileId, selectedRealmId, updatedAt",

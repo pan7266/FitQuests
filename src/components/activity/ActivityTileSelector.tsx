@@ -1,4 +1,5 @@
 import { Check, Plus } from "lucide-react";
+import { getExerciseMedia } from "../../data/exerciseMedia";
 import type { Activity, DailyActivitySummary } from "../../db/schema";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { cn } from "../../utils/classNames";
@@ -11,6 +12,7 @@ interface ActivityTileSelectorProps {
   activities: Activity[];
   value: string;
   onChange: (activityId: string) => void;
+  onStartActivity?: ((activityId: string) => void) | undefined;
   onAddActivity: () => void;
   summaries?: DailyActivitySummary[] | undefined;
   localDate?: string | undefined;
@@ -20,6 +22,7 @@ export function ActivityTileSelector({
   activities,
   value,
   onChange,
+  onStartActivity,
   onAddActivity,
   summaries = [],
   localDate = toLocalDate()
@@ -39,40 +42,39 @@ export function ActivityTileSelector({
       <div className="activity-tile-grid grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
         {sortedActivities.map((activity) => {
           const isSelected = activity.id === value;
+          const directStart = Boolean(onStartActivity);
           const summary = summaries.find(
             (item) => item.activityId === activity.id && item.localDate === localDate
           );
           const todayTotal = getTodayTotal(activity, summary);
-
-          return (
-            <TileButton
-              aria-pressed={isSelected}
-              className={cn(
-                "train-activity-tile min-h-32 rounded-[1.5rem] p-4",
-                isSelected && "accent-selected"
-              )}
-              key={activity.id}
-              onClick={() => onChange(activity.id)}
-              selected={isSelected}
-            >
-              {isSelected ? (
+          const media = getExerciseMedia(activity.slug);
+          const translatedName = translateActivityName(activity, t);
+          const content = (
+            <>
+              {isSelected && !directStart ? (
                 <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[var(--accent-glow)]">
                   <Check aria-hidden="true" size={16} />
                 </span>
               ) : null}
-              <span
-                aria-hidden="true"
-                className={cn(
-                  "activity-tile-icon mb-4 flex h-11 w-11 items-center justify-center rounded-2xl transition",
-                  isSelected
-                    ? "bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[var(--accent-glow)]"
-                    : "app-inset text-[var(--accent)]"
+              <span className="relative mb-3 block aspect-[4/3] overflow-hidden rounded-[1.05rem] bg-[var(--surface-inset)]">
+                {media ? (
+                  <img
+                    alt={t(media.imageAltKey)}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                    src={media.imageSrc}
+                  />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-[var(--accent)]">
+                    <ActivityIcon activity={activity} size={32} />
+                  </span>
                 )}
-              >
-                <ActivityIcon activity={activity} size={22} />
+                <span className="absolute left-2 top-2 flex h-9 w-9 items-center justify-center rounded-xl bg-black/48 text-white backdrop-blur-md">
+                  <ActivityIcon activity={activity} size={20} />
+                </span>
               </span>
-              <span className="text-app block pr-7 text-base font-black">
-                {translateActivityName(activity, t)}
+              <span className="text-app block text-base font-black leading-tight">
+                {translatedName}
               </span>
               <span className="text-app-muted mt-1 block text-xs font-bold uppercase tracking-[0.12em]">
                 {translateActivityType(activity.activityType, t)}
@@ -84,6 +86,43 @@ export function ActivityTileSelector({
                   <span className="app-pill">{formatTodayOnly(activity, todayTotal, t)}</span>
                 )}
               </div>
+            </>
+          );
+
+          if (directStart) {
+            return (
+              <article
+                className="train-activity-tile app-card flex min-h-40 flex-col overflow-hidden rounded-[1.5rem] p-3"
+                key={activity.id}
+              >
+                {content}
+                <button
+                  className="focus-ring mt-auto flex min-h-10 w-full items-center justify-center rounded-xl bg-[var(--accent)] px-3 text-sm font-black text-[var(--accent-contrast)] shadow-[var(--accent-glow)]"
+                  onClick={() => onStartActivity?.(activity.id)}
+                  type="button"
+                >
+                  {t("common.startWorkout")}
+                </button>
+              </article>
+            );
+          }
+
+          return (
+            <TileButton
+              aria-pressed={isSelected}
+              className={cn(
+                "train-activity-tile flex min-h-40 flex-col overflow-hidden rounded-[1.5rem] p-3",
+                isSelected && !directStart && "accent-selected"
+              )}
+              key={activity.id}
+              onClick={() => {
+                if (!directStart) {
+                  onChange(activity.id);
+                }
+              }}
+              selected={isSelected && !directStart}
+            >
+              {content}
             </TileButton>
           );
         })}
@@ -111,10 +150,16 @@ function getTodayTotal(activity: Activity, summary?: DailyActivitySummary | unde
   if (activity.activityType === "timed") {
     return summary?.totalSeconds ?? 0;
   }
+  if (activity.activityType === "health") {
+    return 0;
+  }
   return summary?.totalReps ?? 0;
 }
 
 function formatActivityAmount(activity: Activity, value: number) {
+  if (activity.activityType === "health" || activity.unit === "milliliters") {
+    return `${(value / 1000).toFixed(2)} L`;
+  }
   if (activity.activityType === "cardio") {
     return `${(value / 1000).toFixed(1)} km`;
   }
@@ -125,6 +170,9 @@ function formatActivityAmount(activity: Activity, value: number) {
 }
 
 function formatGoalLine(activity: Activity, todayTotal: number) {
+  if (activity.activityType === "health" || activity.unit === "milliliters") {
+    return `${(todayTotal / 1000).toFixed(2)} / ${(activity.dailyGoal / 1000).toFixed(1)} L`;
+  }
   if (activity.activityType === "cardio") {
     return `${(todayTotal / 1000).toFixed(1)} / ${(activity.dailyGoal / 1000).toFixed(1)} km`;
   }
@@ -144,6 +192,9 @@ function translateActivityType(activityType: Activity["activityType"], t: (key: 
   }
   if (activityType === "strength") {
     return t("train.strength");
+  }
+  if (activityType === "health") {
+    return t("train.health");
   }
   return t("workout.timed");
 }

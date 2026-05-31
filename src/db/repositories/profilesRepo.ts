@@ -246,6 +246,8 @@ export const deleteProfile = async (profileId: string, database: PenRepsDatabase
       database.profileHistory,
       database.appMeta,
       database.settings,
+      database.healthLogs,
+      database.userEquipmentInventory,
       database.trainLogs,
       database.adventureProgress,
       database.workouts,
@@ -260,6 +262,8 @@ export const deleteProfile = async (profileId: string, database: PenRepsDatabase
       await Promise.all([
         database.trainLogs.where("profileId").equals(profileId).delete(),
         database.profileHistory.where("profileId").equals(profileId).delete(),
+        database.healthLogs.where("profileId").equals(profileId).delete(),
+        database.userEquipmentInventory.where("profileId").equals(profileId).delete(),
         database.adventureProgress.where("profileId").equals(profileId).delete(),
         database.workouts.where("profileId").equals(profileId).delete(),
         database.workoutSets.where("profileId").equals(profileId).delete(),

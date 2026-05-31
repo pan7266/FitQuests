@@ -147,20 +147,20 @@
 }
 
 .theme-ios.color-light {
-  --background: #f7f8fc;
-  --surface: rgba(255, 255, 255, 0.72);
-  --surface-raised: rgba(255, 255, 255, 0.84);
-  --surface-inset: rgba(237, 242, 249, 0.72);
-  --border-soft: rgba(148, 163, 184, 0.34);
-  --text-primary: #0f172a;
-  --text-soft: #334155;
-  --text-muted: #64748b;
-  --toggle-off: rgba(148, 163, 184, 0.22);
-  --hover-soft: rgba(15, 23, 42, 0.055);
-  --progress-track: rgba(226, 232, 240, 0.84);
-  --shadow-raised: 0 14px 34px rgba(15, 23, 42, 0.1);
-  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  --accent-glow: 0 0 26px color-mix(in srgb, var(--accent) 24%, transparent);
+  --background: #f5f5f7;
+  --surface: rgba(255, 255, 255, 0.66);
+  --surface-raised: rgba(255, 255, 255, 0.82);
+  --surface-inset: rgba(242, 242, 247, 0.76);
+  --border-soft: rgba(60, 60, 67, 0.19);
+  --text-primary: #111111;
+  --text-soft: rgba(60, 60, 67, 0.86);
+  --text-muted: rgba(60, 60, 67, 0.64);
+  --toggle-off: rgba(120, 120, 128, 0.18);
+  --hover-soft: rgba(0, 0, 0, 0.045);
+  --progress-track: rgba(120, 120, 128, 0.16);
+  --shadow-raised: 0 10px 30px rgba(31, 41, 55, 0.08);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  --accent-glow: 0 10px 30px color-mix(in srgb, var(--accent) 16%, transparent);
   --glow-blue:
     0 0 0 1px color-mix(in srgb, var(--accent) 42%, transparent),
     0 10px 28px color-mix(in srgb, var(--accent) 18%, transparent);
@@ -170,24 +170,25 @@
       color-mix(in srgb, var(--accent) 14%, transparent),
       transparent 30rem
     ),
-    linear-gradient(180deg, #ffffff 0%, #f7f8fc 42%, #eef2f7 100%);
+    radial-gradient(circle at 82% 8%, rgba(255, 255, 255, 0.9), transparent 19rem),
+    linear-gradient(180deg, #ffffff 0%, #f5f5f7 48%, #e9edf5 100%);
 }
 
 .theme-ios.color-dark {
-  --background: #050713;
-  --surface: rgba(17, 24, 39, 0.72);
-  --surface-raised: rgba(30, 41, 59, 0.72);
-  --surface-inset: rgba(2, 6, 23, 0.54);
-  --border-soft: rgba(226, 232, 240, 0.16);
-  --text-primary: #f8fafc;
-  --text-soft: #cbd5e1;
-  --text-muted: #94a3b8;
-  --toggle-off: rgba(148, 163, 184, 0.24);
-  --hover-soft: rgba(248, 250, 252, 0.07);
-  --progress-track: rgba(15, 23, 42, 0.78);
-  --shadow-raised: 0 18px 46px rgba(0, 0, 0, 0.34);
-  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  --accent-glow: 0 0 26px color-mix(in srgb, var(--accent) 28%, transparent);
+  --background: #000000;
+  --surface: rgba(28, 28, 30, 0.68);
+  --surface-raised: rgba(44, 44, 46, 0.76);
+  --surface-inset: rgba(18, 18, 20, 0.72);
+  --border-soft: rgba(235, 235, 245, 0.14);
+  --text-primary: #f5f5f7;
+  --text-soft: rgba(235, 235, 245, 0.84);
+  --text-muted: rgba(235, 235, 245, 0.58);
+  --toggle-off: rgba(120, 120, 128, 0.32);
+  --hover-soft: rgba(255, 255, 255, 0.075);
+  --progress-track: rgba(120, 120, 128, 0.28);
+  --shadow-raised: 0 14px 42px rgba(0, 0, 0, 0.4);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --accent-glow: 0 14px 34px color-mix(in srgb, var(--accent) 18%, transparent);
   --glow-blue:
     0 0 0 1px color-mix(in srgb, var(--accent) 42%, transparent),
     0 12px 34px color-mix(in srgb, var(--accent) 20%, transparent);
@@ -197,7 +198,8 @@
       color-mix(in srgb, var(--accent) 20%, transparent),
       transparent 30rem
     ),
-    linear-gradient(180deg, #050713 0%, #0b1020 52%, #0f172a 100%);
+    radial-gradient(circle at 82% 8%, rgba(255, 255, 255, 0.08), transparent 19rem),
+    linear-gradient(180deg, #000000 0%, #111113 54%, #1c1c1e 100%);
 }
 
 .app-card {
@@ -211,7 +213,10 @@
 }
 
 .theme-ios .app-card {
-  backdrop-filter: saturate(1.45) blur(20px);
+  border-width: 0.5px;
+  backdrop-filter: saturate(1.8) blur(24px);
+  -webkit-backdrop-filter: saturate(1.8) blur(24px);
+  box-shadow: var(--shadow-raised);
 }
 
 .app-inset {
@@ -221,7 +226,20 @@
 }
 
 .theme-ios .app-inset {
-  backdrop-filter: saturate(1.25) blur(14px);
+  border-width: 0.5px;
+  backdrop-filter: saturate(1.45) blur(16px);
+  -webkit-backdrop-filter: saturate(1.45) blur(16px);
+}
+
+.theme-ios nav {
+  inset-inline: 0.75rem;
+  bottom: 0.55rem;
+  border: 0.5px solid var(--border-soft);
+  border-radius: 1.65rem;
+  background: color-mix(in srgb, var(--surface-raised) 86%, transparent);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.22);
+  backdrop-filter: saturate(1.8) blur(24px);
+  -webkit-backdrop-filter: saturate(1.8) blur(24px);
 }
 
 .app-pill {
