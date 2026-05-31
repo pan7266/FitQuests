@@ -40,7 +40,7 @@ export const HERO_SKILL_DEFINITIONS: Array<Omit<HeroSkill, "level" | "updatedAt"
     id: "skill_endurance",
     slug: "endurance",
     name: "Endurance",
-    description: "Damage reduction and better rest recovery.",
+    description: "Maximum HP, damage reduction, and better rest recovery.",
     icon: "Boots"
   },
   {
@@ -68,7 +68,7 @@ export const HERO_SKILL_DEFINITIONS: Array<Omit<HeroSkill, "level" | "updatedAt"
     id: "skill_life",
     slug: "life",
     name: "Life",
-    description: "Maximum HP.",
+    description: "Survival margin and recovery.",
     icon: "Heart"
   }
 ];
@@ -338,8 +338,8 @@ const getSkillLevel = (skills: HeroSkill[], slug: HeroSkillSlug) =>
   skills.find((skill) => skill.slug === slug)?.level ?? 1;
 
 const calculateMaxHP = (level: number, skills: HeroSkill[]) => {
-  const lifeLevel = getSkillLevel(skills, "life");
-  return 100 + Math.max(0, level - 1) * 10 + Math.max(0, lifeLevel - 1) * 15;
+  const enduranceLevel = getSkillLevel(skills, "endurance");
+  return 100 + Math.max(0, level - 1) * 10 + Math.max(0, enduranceLevel - 1) * 10;
 };
 
 const isRegionUnlockedByIndex = (

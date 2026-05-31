@@ -5,6 +5,7 @@ import { listActivities } from "../../db/repositories/activitiesRepo";
 import { listAdventureState } from "../../db/repositories/adventureRepo";
 import {
   addHealthLog,
+  createHealthTask,
   listHealthLogsForDate,
   listHealthTasks
 } from "../../db/repositories/healthRepo";
@@ -20,6 +21,7 @@ import type {
 } from "../../db/schema";
 import { useAppStore } from "../../stores/appStore";
 import { useSettingsStore } from "../../stores/settingsStore";
+import { useWorkoutStore } from "../../stores/workoutStore";
 import { formatDuration, toLocalDate } from "../../utils/dates";
 import { translate } from "../../utils/i18n";
 import { getDailyGoalMultiplierLabel } from "../../utils/stats";
@@ -37,9 +39,10 @@ interface HomeState {
 export function HomeScreen() {
   const setActiveTab = useAppStore((state) => state.setActiveTab);
   const setActiveBattle = useAppStore((state) => state.setActiveBattle);
-  const setSelectedActivityId = useAppStore((state) => state.setSelectedActivityId);
+  const startWorkout = useWorkoutStore((state) => state.startWorkout);
   const appLanguage = useSettingsStore((state) => state.settings?.appLanguage ?? "en");
   const t = (key: string) => translate(appLanguage, key);
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
   const [state, setState] = useState<HomeState>({
     activities: [],
     summaries: [],
@@ -91,8 +94,8 @@ export function HomeScreen() {
     setActiveTab("adventure");
   };
 
-  const startExercise = (activityId: string) => {
-    setSelectedActivityId(activityId);
+  const startExercise = async (activity: Activity) => {
+    await startWorkout(activity, getModeForActivity(activity));
     setActiveTab("train");
   };
 
@@ -112,7 +115,16 @@ export function HomeScreen() {
       />
 
       <section className="app-card rounded-[1.75rem] p-5">
-        <h2 className="text-app text-xl font-black">{t("home.todaysGoals")}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-app text-xl font-black">{t("home.todaysGoals")}</h2>
+          <button
+            className="focus-ring rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-black text-[var(--accent-contrast)]"
+            onClick={() => setTaskModalOpen(true)}
+            type="button"
+          >
+            {t("health.createTask")}
+          </button>
+        </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {state.activities.slice(0, 6).map((activity) => (
             <GoalCard
@@ -121,7 +133,7 @@ export function HomeScreen() {
               summary={state.summaries.find(
                 (summary) => summary.activityId === activity.id && summary.localDate === today
               )}
-              onStartExercise={() => startExercise(activity.id)}
+              onStartExercise={() => void startExercise(activity)}
               onSetGoal={() => setActiveTab("settings")}
               t={t}
             />
@@ -131,7 +143,8 @@ export function HomeScreen() {
               key={task.id}
               logs={state.healthLogs.filter((log) => log.taskId === task.id)}
               onQuickAdd={async () => {
-                await addHealthLog({ taskId: task.id, value: 250 });
+                const log = await addHealthLog({ taskId: task.id, value: 250 });
+                setState((current) => ({ ...current, healthLogs: [...current.healthLogs, log] }));
                 await load();
               }}
               task={task}
@@ -140,7 +153,105 @@ export function HomeScreen() {
           ))}
         </div>
       </section>
+      {taskModalOpen ? (
+        <CreateTaskModal
+          onClose={() => setTaskModalOpen(false)}
+          onCreate={async ({ name, dailyGoalMl }) => {
+            await createHealthTask({ name, dailyGoal: dailyGoalMl });
+            setTaskModalOpen(false);
+            await load();
+          }}
+          t={t}
+        />
+      ) : null}
     </section>
+  );
+}
+
+function getModeForActivity(activity: Activity) {
+  if (activity.activityType === "cardio") {
+    return "cardio" as const;
+  }
+  if (activity.activityType === "timed") {
+    return "timed" as const;
+  }
+  return "live" as const;
+}
+
+function CreateTaskModal({
+  onClose,
+  onCreate,
+  t
+}: {
+  onClose: () => void;
+  onCreate: (input: { name: string; dailyGoalMl: number }) => Promise<void>;
+  t: (key: string) => string;
+}) {
+  const [name, setName] = useState(t("health.dailyWater"));
+  const [dailyGoalLiters, setDailyGoalLiters] = useState("3");
+  const dailyGoalMl = Math.max(1, Math.round(Number(dailyGoalLiters) * 1000));
+  return (
+    <div
+      aria-labelledby="create-task-title"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/58 p-4 backdrop-blur-sm sm:items-center"
+      onClick={(event) => {
+        if (event.currentTarget === event.target) {
+          onClose();
+        }
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          onClose();
+        }
+      }}
+      role="dialog"
+      tabIndex={-1}
+    >
+      <div className="app-card w-full max-w-sm rounded-[1.75rem] p-5">
+        <h2 className="text-app text-2xl font-black" id="create-task-title">
+          {t("health.createTask")}
+        </h2>
+        <label className="mt-4 block">
+          <span className="text-app-soft mb-2 block text-sm font-bold">{t("settings.name")}</span>
+          <input
+            className="focus-ring app-inset min-h-12 w-full rounded-2xl px-3 text-base text-app"
+            onChange={(event) => setName(event.target.value)}
+            value={name}
+          />
+        </label>
+        <label className="mt-4 block">
+          <span className="text-app-soft mb-2 block text-sm font-bold">
+            {t("health.dailyGoalLiters")}
+          </span>
+          <input
+            className="focus-ring app-inset min-h-12 w-full rounded-2xl px-3 text-base text-app"
+            inputMode="decimal"
+            min={0}
+            onChange={(event) => setDailyGoalLiters(event.target.value)}
+            step="0.1"
+            type="number"
+            value={dailyGoalLiters}
+          />
+        </label>
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <button
+            className="focus-ring min-h-11 rounded-2xl bg-[var(--surface-inset)] px-4 font-black text-app"
+            onClick={onClose}
+            type="button"
+          >
+            {t("common.cancel")}
+          </button>
+          <button
+            className="focus-ring min-h-11 rounded-2xl bg-[var(--accent)] px-4 font-black text-[var(--accent-contrast)] disabled:opacity-50"
+            disabled={!name.trim() || !Number.isFinite(dailyGoalMl)}
+            onClick={() => void onCreate({ name, dailyGoalMl })}
+            type="button"
+          >
+            {t("common.save")}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

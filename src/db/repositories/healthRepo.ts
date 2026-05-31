@@ -48,6 +48,41 @@ export const listHealthTasks = async (database: PenRepsDatabase = db) => {
   return (await database.healthTasks.toArray()).filter((task) => !task.isArchived);
 };
 
+export const createHealthTask = async (
+  input: { name: string; dailyGoal: number; color?: string },
+  database: PenRepsDatabase = db
+): Promise<HealthTask> => {
+  const timestamp = nowIso();
+  const baseSlug =
+    input.name
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "") || "health-task";
+  let slug = baseSlug;
+  let suffix = 2;
+  while (await database.healthTasks.where("slug").equals(slug).first()) {
+    slug = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
+  const task: HealthTask = {
+    id: createId(),
+    slug,
+    name: input.name.trim() || "Health task",
+    unit: "milliliters",
+    cadence: "daily",
+    dailyGoal: Math.max(1, Math.round(input.dailyGoal)),
+    icon: "Droplets",
+    color: input.color ?? DEFAULT_ACCENT,
+    isDefault: false,
+    isArchived: false,
+    createdAt: timestamp,
+    updatedAt: timestamp
+  };
+  await database.healthTasks.add(task);
+  return task;
+};
+
 export const listHealthLogsForDate = async (
   localDate = toLocalDate(),
   database: PenRepsDatabase = db

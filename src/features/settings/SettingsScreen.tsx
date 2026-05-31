@@ -9,7 +9,6 @@ import { ProfileHeroSection } from "../../components/profile/ProfileHeroSection"
 import { CharacterPortrait } from "../../components/visuals/FantasyVisuals";
 import {
   archiveCustomActivity,
-  createCustomActivity,
   listActivities,
   updateActivity
 } from "../../db/repositories/activitiesRepo";
@@ -26,16 +25,11 @@ import { listSummaries, recalculateDailySummaries } from "../../db/repositories/
 import { listWorkouts } from "../../db/repositories/workoutsRepo";
 import type {
   Activity,
-  ActivityUnit,
   AdventureRegion,
-  AppLanguage,
-  ColorMode,
   DailyActivitySummary,
   HeroProgress,
   LocalProfile,
   Settings,
-  UiDensity,
-  UiStyle,
   UserProgress,
   Workout
 } from "../../db/schema";
@@ -70,18 +64,14 @@ export function SettingsScreen() {
   const updateSettings = useSettingsStore((state) => state.updateSettings);
   const loadSettings = useSettingsStore((state) => state.loadSettings);
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [newName, setNewName] = useState("");
-  const [newUnit, setNewUnit] = useState<ActivityUnit>("reps");
   const [status, setStatus] = useState("");
   const [profiles, setProfiles] = useState<LocalProfile[]>([]);
   const [newProfileWizardOpen, setNewProfileWizardOpen] = useState(false);
   const [newProfileDraft, setNewProfileDraft] = useState({
     displayName: "",
-    appLanguage: "en" as AppLanguage,
-    uiStyle: "ios" as UiStyle,
-    colorMode: "light" as ColorMode,
-    uiDensity: "cozy" as UiDensity,
-    accentColor: DEFAULT_ACCENT
+    weightKg: "",
+    heightCm: "",
+    goalWeightKg: ""
   });
   const [profileEditing, setProfileEditing] = useState(false);
   const [profileDraft, setProfileDraft] = useState<ProfileDraft>({
@@ -184,18 +174,6 @@ export function SettingsScreen() {
     await loadHeroStats();
     await loadSettings();
     setStatus(t("settings.importComplete"));
-  };
-
-  const addCustomActivity = async () => {
-    if (!newName.trim()) {
-      return;
-    }
-
-    await createCustomActivity({ name: newName, unit: newUnit });
-    setNewName("");
-    setNewUnit("reps");
-    await loadActivities();
-    setStatus(t("settings.customActivityAdded"));
   };
 
   const resetData = async () => {
@@ -528,42 +506,6 @@ export function SettingsScreen() {
               />
             </div>
           </section>
-          <section className="app-card rounded-[1.75rem] p-5">
-            <h2 className="text-app text-lg font-black">{t("settings.addCustomActivity")}</h2>
-            <label className="mt-4 block">
-              <span className="text-app-soft mb-2 block text-sm font-bold">
-                {t("settings.name")}
-              </span>
-              <input
-                className="focus-ring app-inset min-h-12 w-full rounded-2xl px-4 text-[#F8FAFC]"
-                onChange={(event) => setNewName(event.target.value)}
-                value={newName}
-              />
-            </label>
-            <fieldset className="mt-3">
-              <legend className="text-app-soft mb-2 block text-sm font-bold">
-                {t("settings.unit")}
-              </legend>
-              <div className="grid grid-cols-3 gap-2">
-                {(["reps", "seconds", "distance", "weight", "milliliters"] as const).map((unit) => (
-                  <button
-                    aria-pressed={newUnit === unit}
-                    className={`focus-ring min-h-12 rounded-2xl px-4 font-bold transition ${
-                      newUnit === unit ? "accent-selected text-app" : "app-inset text-app"
-                    }`}
-                    key={unit}
-                    onClick={() => setNewUnit(unit)}
-                    type="button"
-                  >
-                    {unit}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-            <NeomorphicButton className="mt-4 w-full" onClick={addCustomActivity} variant="primary">
-              {t("common.addActivity")}
-            </NeomorphicButton>
-          </section>
           <section className="space-y-3">
             <h2 className="text-app px-1 text-lg font-black">{t("settings.activityManagement")}</h2>
             <div className="grid gap-3 xl:grid-cols-2">
@@ -647,7 +589,7 @@ export function SettingsScreen() {
             <p className="text-app-soft mt-2 text-sm leading-6">
               {t("settings.newProfileSetupDescription")}
             </p>
-            <div className="mt-5 space-y-4">
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <ProfileTextField
                 label={t("profile.displayName")}
                 onChange={(value) =>
@@ -655,67 +597,35 @@ export function SettingsScreen() {
                 }
                 value={newProfileDraft.displayName}
               />
-              <SegmentedSetting
-                label={t("settings.appLanguage")}
+              <ProfileTextField
+                inputMode="decimal"
+                label={t("profile.weightKg")}
                 onChange={(value) =>
-                  setNewProfileDraft((current) => ({
-                    ...current,
-                    appLanguage: value as AppLanguage
-                  }))
+                  setNewProfileDraft((current) => ({ ...current, weightKg: value }))
                 }
-                options={[
-                  { label: t("settings.english"), value: "en" },
-                  { label: t("settings.greek"), value: "el" }
-                ]}
-                value={newProfileDraft.appLanguage}
+                step="0.1"
+                type="number"
+                value={newProfileDraft.weightKg}
               />
-              <ThemeSelector
-                colorMode={newProfileDraft.colorMode}
-                onChange={(choice) =>
-                  setNewProfileDraft((current) => ({
-                    ...current,
-                    uiStyle: choice.uiStyle,
-                    colorMode: choice.colorMode
-                  }))
-                }
-                uiStyle={newProfileDraft.uiStyle}
-              />
-              <SegmentedSetting
-                label={t("theme.mode")}
+              <ProfileTextField
+                inputMode="numeric"
+                label={t("profile.heightCm")}
                 onChange={(value) =>
-                  setNewProfileDraft((current) => ({
-                    ...current,
-                    colorMode: value as ColorMode
-                  }))
+                  setNewProfileDraft((current) => ({ ...current, heightCm: value }))
                 }
-                options={[
-                  { label: t("theme.light"), value: "light" },
-                  { label: t("theme.dark"), value: "dark" }
-                ]}
-                value={newProfileDraft.colorMode}
+                step="1"
+                type="number"
+                value={newProfileDraft.heightCm}
               />
-              <SegmentedSetting
-                label={t("settings.uiDensity")}
+              <ProfileTextField
+                inputMode="decimal"
+                label={t("profile.goalWeightKg")}
                 onChange={(value) =>
-                  setNewProfileDraft((current) => ({
-                    ...current,
-                    uiDensity: value as UiDensity
-                  }))
+                  setNewProfileDraft((current) => ({ ...current, goalWeightKg: value }))
                 }
-                options={[
-                  { label: t("settings.cozy"), value: "cozy" },
-                  { label: t("settings.compact"), value: "compact" }
-                ]}
-                value={newProfileDraft.uiDensity}
-              />
-              <AccentColorControl
-                hueLabel={t("settings.hueSlider")}
-                onChange={(accentColor) =>
-                  setNewProfileDraft((current) => ({ ...current, accentColor }))
-                }
-                resetLabel={t("settings.resetDefault")}
-                title={t("settings.themeAccent")}
-                value={newProfileDraft.accentColor}
+                step="0.1"
+                type="number"
+                value={newProfileDraft.goalWeightKg}
               />
             </div>
             <div className="mt-5 grid grid-cols-2 gap-3">
@@ -728,15 +638,32 @@ export function SettingsScreen() {
                     name: newProfileDraft.displayName.trim() || t("common.player")
                   });
                   await switchActiveProfile(profile.id);
-                  await updateSettings({
+                  const profileSettings: Partial<
+                    Pick<
+                      Settings,
+                      | "displayName"
+                      | "weightKg"
+                      | "heightCm"
+                      | "goalWeightKg"
+                      | "onboardingCompleted"
+                    >
+                  > = {
                     displayName: newProfileDraft.displayName.trim() || t("common.player"),
-                    appLanguage: newProfileDraft.appLanguage,
-                    uiStyle: newProfileDraft.uiStyle,
-                    colorMode: newProfileDraft.colorMode,
-                    uiDensity: newProfileDraft.uiDensity,
-                    accentColor: newProfileDraft.accentColor,
                     onboardingCompleted: true
-                  });
+                  };
+                  const weightKg = parseOptionalProfileNumber(newProfileDraft.weightKg);
+                  const heightCm = parseOptionalProfileNumber(newProfileDraft.heightCm);
+                  const goalWeightKg = parseOptionalProfileNumber(newProfileDraft.goalWeightKg);
+                  if (weightKg !== undefined) {
+                    profileSettings.weightKg = weightKg;
+                  }
+                  if (heightCm !== undefined) {
+                    profileSettings.heightCm = heightCm;
+                  }
+                  if (goalWeightKg !== undefined) {
+                    profileSettings.goalWeightKg = goalWeightKg;
+                  }
+                  await updateSettings(profileSettings);
                   setNewProfileWizardOpen(false);
                   await refreshProfileScopedData();
                 }}
@@ -791,7 +718,7 @@ function ProfileTextField({
     <label className="block">
       <span className="text-app-soft mb-1 block text-xs font-bold">{label}</span>
       <input
-        className="focus-ring app-inset min-h-11 w-full rounded-2xl px-3 text-app"
+        className="focus-ring app-inset min-h-11 w-full rounded-2xl px-3 text-base text-app"
         inputMode={inputMode}
         min={0}
         onChange={(event) => onChange(event.target.value)}

@@ -1,5 +1,4 @@
 import { Check, Plus } from "lucide-react";
-import { getExerciseMedia } from "../../data/exerciseMedia";
 import type { Activity, DailyActivitySummary } from "../../db/schema";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { cn } from "../../utils/classNames";
@@ -7,6 +6,7 @@ import { formatDuration, toLocalDate } from "../../utils/dates";
 import { translate } from "../../utils/i18n";
 import { TileButton } from "../controls/Button";
 import { ActivityIcon } from "./ActivityIcon";
+import { ExerciseIllustration } from "./ExerciseIllustration";
 
 interface ActivityTileSelectorProps {
   activities: Activity[];
@@ -47,7 +47,6 @@ export function ActivityTileSelector({
             (item) => item.activityId === activity.id && item.localDate === localDate
           );
           const todayTotal = getTodayTotal(activity, summary);
-          const media = getExerciseMedia(activity.slug);
           const translatedName = translateActivityName(activity, t);
           const content = (
             <>
@@ -57,19 +56,8 @@ export function ActivityTileSelector({
                 </span>
               ) : null}
               <span className="relative mb-3 block aspect-[4/3] overflow-hidden rounded-[1.05rem] bg-[var(--surface-inset)]">
-                {media ? (
-                  <img
-                    alt={t(media.imageAltKey)}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                    src={media.imageSrc}
-                  />
-                ) : (
-                  <span className="flex h-full w-full items-center justify-center text-[var(--accent)]">
-                    <ActivityIcon activity={activity} size={32} />
-                  </span>
-                )}
-                <span className="absolute left-2 top-2 flex h-9 w-9 items-center justify-center rounded-xl bg-black/48 text-white backdrop-blur-md">
+                <ExerciseIllustration activity={activity} />
+                <span className="absolute left-2 top-2 flex h-9 w-9 items-center justify-center rounded-xl bg-black/36 text-white backdrop-blur-md">
                   <ActivityIcon activity={activity} size={20} />
                 </span>
               </span>
@@ -150,16 +138,10 @@ function getTodayTotal(activity: Activity, summary?: DailyActivitySummary | unde
   if (activity.activityType === "timed") {
     return summary?.totalSeconds ?? 0;
   }
-  if (activity.activityType === "health") {
-    return 0;
-  }
   return summary?.totalReps ?? 0;
 }
 
 function formatActivityAmount(activity: Activity, value: number) {
-  if (activity.activityType === "health" || activity.unit === "milliliters") {
-    return `${(value / 1000).toFixed(2)} L`;
-  }
   if (activity.activityType === "cardio") {
     return `${(value / 1000).toFixed(1)} km`;
   }
@@ -170,9 +152,6 @@ function formatActivityAmount(activity: Activity, value: number) {
 }
 
 function formatGoalLine(activity: Activity, todayTotal: number) {
-  if (activity.activityType === "health" || activity.unit === "milliliters") {
-    return `${(todayTotal / 1000).toFixed(2)} / ${(activity.dailyGoal / 1000).toFixed(1)} L`;
-  }
   if (activity.activityType === "cardio") {
     return `${(todayTotal / 1000).toFixed(1)} / ${(activity.dailyGoal / 1000).toFixed(1)} km`;
   }
@@ -192,9 +171,6 @@ function translateActivityType(activityType: Activity["activityType"], t: (key: 
   }
   if (activityType === "strength") {
     return t("train.strength");
-  }
-  if (activityType === "health") {
-    return t("train.health");
   }
   return t("workout.timed");
 }

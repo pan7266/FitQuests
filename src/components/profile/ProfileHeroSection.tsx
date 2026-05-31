@@ -198,6 +198,7 @@ export function ProfileHeroSection({
             const skill = state.skills.find((item) => item.slug === slug);
             return (
               <HeroChip
+                description={translateSkillShort(slug, t)}
                 key={slug}
                 label={translateSkillName(slug, t)}
                 onClick={() => {
@@ -264,12 +265,14 @@ function HeroChip({
   label,
   value,
   pulse = false,
-  onClick
+  onClick,
+  description
 }: {
   label: string;
   value: string;
   pulse?: boolean;
   onClick?: (() => void) | undefined;
+  description?: string | undefined;
 }) {
   const content = (
     <div className="flex items-start gap-2">
@@ -279,6 +282,11 @@ function HeroChip({
           {label}
         </p>
         <p className="text-app mt-1 break-words text-sm font-black leading-tight">{value}</p>
+        {description ? (
+          <p className="text-app-soft mt-1 line-clamp-2 text-[0.68rem] font-semibold leading-4">
+            {description}
+          </p>
+        ) : null}
       </div>
     </div>
   );
@@ -390,6 +398,18 @@ function translateSkillDetail(slug: HeroSkillSlug, t: (key: string) => string) {
     agility: "profile.skillAgilityDetail",
     luck: "profile.skillLuckDetail",
     life: "profile.skillLifeDetail"
+  };
+  return t(keys[slug]);
+}
+
+function translateSkillShort(slug: HeroSkillSlug, t: (key: string) => string) {
+  const keys: Record<HeroSkillSlug, string> = {
+    power: "profile.skillPowerShort",
+    endurance: "profile.skillEnduranceShort",
+    focus: "profile.skillFocusShort",
+    agility: "profile.skillAgilityShort",
+    luck: "profile.skillLuckShort",
+    life: "profile.skillLifeShort"
   };
   return t(keys[slug]);
 }

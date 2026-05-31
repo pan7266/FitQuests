@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIcon } from "../../components/activity/ActivityIcon";
 import { ActivityTileSelector } from "../../components/activity/ActivityTileSelector";
+import { AddActivityModal } from "../../components/activity/AddActivityModal";
 import { NeomorphicButton } from "../../components/neumorphic/NeomorphicButton";
 import { ProfileHeroSection } from "../../components/profile/ProfileHeroSection";
 import { RestTimer } from "../../components/workout/RestTimer";
 import { TimedSetTimer } from "../../components/workout/TimedSetTimer";
 import { WorkoutCounter } from "../../components/workout/WorkoutCounter";
 import { WorkoutSummary } from "../../components/workout/WorkoutSummary";
-import { listActivities } from "../../db/repositories/activitiesRepo";
+import { createCustomActivity, listActivities } from "../../db/repositories/activitiesRepo";
 import { listAdventureState, upgradeHeroSkill } from "../../db/repositories/adventureRepo";
 import { listSummaries } from "../../db/repositories/summariesRepo";
 import { deleteWorkout } from "../../db/repositories/workoutsRepo";
@@ -81,24 +82,25 @@ export function WorkoutScreen() {
   const [deleteSummaryPending, setDeleteSummaryPending] = useState(false);
   const [pendingSetDelete, setPendingSetDelete] = useState(false);
   const [inlineMessage, setInlineMessage] = useState("");
+  const [addActivityOpen, setAddActivityOpen] = useState(false);
   const t = (key: string) => translate(settings?.appLanguage ?? "en", key);
 
-  useEffect(() => {
-    const load = async () => {
-      const [nextActivities, nextSummaries, adventure] = await Promise.all([
-        listActivities(),
-        listSummaries(),
-        listAdventureState()
-      ]);
-      setActivities(nextActivities);
-      setSummaries(nextSummaries);
-      setHeroProgress(adventure.hero);
-      setHeroSkills(adventure.skills);
-      setSelectedActivityId(requestedActivityId === "all" ? "" : requestedActivityId);
-    };
-
-    void load();
+  const loadTrainingState = useCallback(async () => {
+    const [nextActivities, nextSummaries, adventure] = await Promise.all([
+      listActivities(),
+      listSummaries(),
+      listAdventureState()
+    ]);
+    setActivities(nextActivities);
+    setSummaries(nextSummaries);
+    setHeroProgress(adventure.hero);
+    setHeroSkills(adventure.skills);
+    setSelectedActivityId(requestedActivityId === "all" ? "" : requestedActivityId);
   }, [requestedActivityId]);
+
+  useEffect(() => {
+    void loadTrainingState();
+  }, [loadTrainingState]);
 
   useEffect(() => {
     const refresh = () => setNow(Date.now());
@@ -387,6 +389,15 @@ export function WorkoutScreen() {
     window.dispatchEvent(new Event("fit-quest-adventure-updated"));
   };
 
+  const handleStartSelectedActivity = async () => {
+    const activity = activities.find((item) => item.id === selectedActivityId);
+    if (!activity) {
+      return;
+    }
+    await unlockAudio();
+    await startWorkout(activity, getModeForActivity(activity));
+  };
+
   const handleRestComplete = useCallback(() => {
     if (!draft?.restTimer || restNotifiedTarget === draft.restTimer.targetEndAt) {
       return;
@@ -519,20 +530,23 @@ export function WorkoutScreen() {
             <ActivityTileSelector
               activities={activities}
               summaries={summaries}
-              onAddActivity={() => setActiveTab("settings")}
-              onChange={() => undefined}
-              onStartActivity={async (activityId) => {
-                const activity = activities.find((item) => item.id === activityId);
-                if (!activity) {
-                  return;
-                }
-                await unlockAudio();
-                await startWorkout(activity, getModeForActivity(activity));
-              }}
+              onAddActivity={() => setAddActivityOpen(true)}
+              onChange={setSelectedActivityId}
               value={selectedActivityId}
             />
           </div>
         </div>
+        {selectedActivityId ? (
+          <div className="sticky bottom-[calc(var(--safe-bottom)+5.4rem)] z-20">
+            <button
+              className="focus-ring min-h-12 w-full rounded-2xl bg-[var(--accent)] px-5 text-base font-black text-[var(--accent-contrast)] shadow-[var(--accent-glow)]"
+              onClick={() => void handleStartSelectedActivity()}
+              type="button"
+            >
+              {t("common.startWorkout")}
+            </button>
+          </div>
+        ) : null}
         <TrainSkillsPanel
           hero={heroProgress}
           onUpgrade={async (slug) => {
@@ -545,6 +559,26 @@ export function WorkoutScreen() {
           skills={heroSkills}
           t={t}
         />
+        {addActivityOpen ? (
+          <AddActivityModal
+            appLanguage={settings?.appLanguage ?? "en"}
+            onClose={() => setAddActivityOpen(false)}
+            onCreateManual={async (input) => {
+              await createCustomActivity(input);
+              setAddActivityOpen(false);
+              await loadTrainingState();
+            }}
+            onSelectExercise={async (exercise) => {
+              await createCustomActivity({
+                name: exercise.name,
+                unit: exercise.unit,
+                icon: exercise.icon
+              });
+              setAddActivityOpen(false);
+              await loadTrainingState();
+            }}
+          />
+        ) : null}
       </section>
     );
   }
@@ -1052,31 +1086,32 @@ function TrainSkillsPanel({
       <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
         {skills.map((skill) => (
           <article
-            className="app-inset grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-2xl p-2.5"
+            className="app-inset grid min-w-0 grid-cols-1 gap-2 rounded-2xl p-2.5 sm:grid-cols-[minmax(0,1fr)_minmax(6.5rem,auto)] sm:items-center"
             key={skill.id}
           >
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 items-center gap-2">
                 <h3 className="text-app truncate text-sm font-black">
                   {translateSkillName(skill.slug, t)}
                 </h3>
                 <span className="app-pill shrink-0">{skillDamageBonus(skill.level)}</span>
               </div>
-              <p className="text-app-soft mt-1 line-clamp-2 text-xs leading-5">
+              <p className="text-app-soft mt-1 text-xs leading-5">
                 {translateSkillDescription(skill.slug, t)}
               </p>
             </div>
-            <div className="w-24">
+            <div className="min-w-0">
               <span className="app-pill mb-2 block text-center">
                 {t("profile.level")} {skill.level}
               </span>
               <button
-                className="focus-ring min-h-9 w-full rounded-xl bg-[var(--accent)] px-3 text-xs font-black text-[var(--accent-contrast)] disabled:bg-[var(--toggle-off)] disabled:text-[var(--text-muted)]"
+                className="focus-ring min-h-9 w-full max-w-full whitespace-normal break-words rounded-xl bg-[var(--accent)] px-3 py-2 text-center text-xs font-black leading-tight text-[var(--accent-contrast)] disabled:bg-[var(--toggle-off)] disabled:text-[var(--text-muted)]"
                 disabled={points <= 0}
                 onClick={() => void onUpgrade(skill.slug)}
+                title={points > 0 ? t("adventure.upgrade") : t("adventure.noSkillPoints")}
                 type="button"
               >
-                {points > 0 ? t("adventure.upgrade") : t("adventure.noSkillPoints")}
+                {points > 0 ? t("adventure.upgrade") : t("common.unavailable")}
               </button>
             </div>
           </article>

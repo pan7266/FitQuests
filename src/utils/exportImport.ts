@@ -114,12 +114,10 @@ const isActivity = (value: unknown): value is Activity => {
     (value.unit === "reps" ||
       value.unit === "seconds" ||
       value.unit === "distance" ||
-      value.unit === "weight" ||
-      value.unit === "milliliters") &&
+      value.unit === "weight") &&
     (value.activityType === "strength" ||
       value.activityType === "timed" ||
-      value.activityType === "cardio" ||
-      value.activityType === "health") &&
+      value.activityType === "cardio") &&
     isString(value.icon) &&
     isString(value.color) &&
     isNumber(value.defaultRestSeconds) &&
@@ -460,8 +458,7 @@ const isAdventureMobRequirement = (value: unknown): value is AdventureMobRequire
     (value.activityType === undefined ||
       value.activityType === "strength" ||
       value.activityType === "timed" ||
-      value.activityType === "cardio" ||
-      value.activityType === "health") &&
+      value.activityType === "cardio") &&
     (value.metric === "reps" ||
       value.metric === "seconds" ||
       value.metric === "distanceMeters" ||
@@ -622,8 +619,7 @@ const isTrainLog = (value: unknown): value is TrainLog => {
     (value.trackingType === "reps" ||
       value.trackingType === "seconds" ||
       value.trackingType === "distance" ||
-      value.trackingType === "weight" ||
-      value.trackingType === "milliliters") &&
+      value.trackingType === "weight") &&
     (value.reps === undefined || isNumber(value.reps)) &&
     (value.durationSeconds === undefined || isNumber(value.durationSeconds)) &&
     (value.distanceMeters === undefined || isNumber(value.distanceMeters)) &&

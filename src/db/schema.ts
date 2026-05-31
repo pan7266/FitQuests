@@ -1,5 +1,5 @@
-export type ActivityUnit = "reps" | "seconds" | "distance" | "weight" | "milliliters";
-export type ActivityType = "strength" | "timed" | "cardio" | "health";
+export type ActivityUnit = "reps" | "seconds" | "distance" | "weight";
+export type ActivityType = "strength" | "timed" | "cardio";
 export type WorkoutMode = "live" | "setEntry" | "timed" | "cardio";
 export type UiStyle = "neomorphism" | "glassmorphism" | "material" | "ios";
 export type ColorMode = "dark" | "light";

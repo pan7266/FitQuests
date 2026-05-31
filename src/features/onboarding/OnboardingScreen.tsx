@@ -258,7 +258,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
   ]);
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col px-5 pb-[calc(var(--safe-bottom)+1.25rem)] pt-[calc(var(--safe-top)+1.25rem)]">
+    <main className="setup-wizard mx-auto flex min-h-dvh max-w-3xl flex-col px-5 pb-[calc(var(--safe-bottom)+1.25rem)] pt-[calc(var(--safe-top)+1.25rem)]">
       <div className="flex items-center justify-between gap-3">
         {index > 0 ? (
           <button
@@ -566,7 +566,7 @@ function TextField({
     <label className="block">
       <span className="text-app-soft mb-2 block text-sm font-bold">{label}</span>
       <input
-        className="focus-ring app-inset min-h-12 w-full rounded-2xl px-4 text-app"
+        className="focus-ring app-inset min-h-12 w-full rounded-2xl px-4 text-base text-app"
         inputMode={inputMode}
         min={0}
         onChange={(event) => onChange(event.target.value)}
